@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const cleanIdentifier = identifier.trim();
 
     // Find user by email or phone
-    const user = db
+    const userResults = await db
       .select()
       .from(users)
       .where(
@@ -30,14 +30,16 @@ export async function POST(request: NextRequest) {
           eq(users.email, cleanIdentifier.toLowerCase()),
           eq(users.phone, cleanIdentifier)
         )
-      )
-      .get();
+      );
+
+    const user = userResults[0];
 
     if (!user) {
       // If demo user or not found
       if (cleanIdentifier.includes('@') || cleanIdentifier.startsWith('08')) {
         // Fallback demo login support
-        const defaultUser = db.select().from(users).where(eq(users.id, 1)).get();
+        const defaultUsers = await db.select().from(users).where(eq(users.id, 1));
+        const defaultUser = defaultUsers[0];
         if (defaultUser) {
           return NextResponse.json({
             success: true,

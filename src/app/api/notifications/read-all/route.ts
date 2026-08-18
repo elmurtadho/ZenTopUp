@@ -7,9 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     await seedDatabase();
 
-    db.update(notifications)
-      .set({ isRead: true })
-      .run();
+    await db.update(notifications).set({ isRead: true });
 
     return NextResponse.json({
       success: true,

@@ -23,11 +23,10 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(paymentMethods.category, category));
     }
 
-    const result = db
+    const result = await db
       .select()
       .from(paymentMethods)
-      .where(and(...conditions))
-      .all();
+      .where(and(...conditions));
 
     // Parse instructions
     const formatted = result.map((m) => {

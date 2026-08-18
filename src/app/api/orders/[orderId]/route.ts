@@ -15,11 +15,12 @@ export async function GET(
     await seedDatabase();
 
     // 1. Fetch order
-    const order = db
+    const orderResults = await db
       .select()
       .from(orders)
-      .where(eq(orders.id, orderId))
-      .get();
+      .where(eq(orders.id, orderId));
+
+    const order = orderResults[0];
 
     if (!order) {
       return NextResponse.json(
@@ -32,25 +33,28 @@ export async function GET(
     }
 
     // 2. Fetch associated game
-    const game = db
+    const gameResults = await db
       .select()
       .from(games)
-      .where(eq(games.id, order.gameId))
-      .get();
+      .where(eq(games.id, order.gameId));
+
+    const game = gameResults[0];
 
     // 3. Fetch associated item
-    const item = db
+    const itemResults = await db
       .select()
       .from(items)
-      .where(eq(items.id, order.itemId))
-      .get();
+      .where(eq(items.id, order.itemId));
+
+    const item = itemResults[0];
 
     // 4. Fetch associated payment
-    const payment = db
+    const paymentResults = await db
       .select()
       .from(payments)
-      .where(eq(payments.orderId, orderId))
-      .get();
+      .where(eq(payments.orderId, orderId));
+
+    const payment = paymentResults[0];
 
     return NextResponse.json({
       success: true,

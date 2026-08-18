@@ -15,11 +15,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     // Ensure database is seeded
     await seedDatabase();
 
-    const method = db
+    const methodResults = await db
       .select()
       .from(paymentMethods)
-      .where(eq(paymentMethods.id, methodId.toLowerCase()))
-      .get();
+      .where(eq(paymentMethods.id, methodId.toLowerCase()));
+
+    const method = methodResults[0];
 
     if (!method) {
       return NextResponse.json(

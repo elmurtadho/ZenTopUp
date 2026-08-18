@@ -14,11 +14,12 @@ export async function GET(request: NextRequest) {
     await seedDatabase();
 
     if (gameSlug) {
-      const game = db
+      const gameResults = await db
         .select()
         .from(games)
-        .where(eq(games.slug, gameSlug))
-        .get();
+        .where(eq(games.slug, gameSlug));
+
+      const game = gameResults[0];
 
       if (!game) {
         return NextResponse.json(
@@ -27,12 +28,11 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const gameItems = db
+      const gameItems = await db
         .select()
         .from(items)
         .where(and(eq(items.gameId, game.id), eq(items.isActive, true)))
-        .orderBy(asc(items.price))
-        .all();
+        .orderBy(asc(items.price));
 
       return NextResponse.json({
         success: true,
@@ -44,12 +44,11 @@ export async function GET(request: NextRequest) {
 
     if (gameId) {
       const parsedGameId = parseInt(gameId, 10);
-      const gameItems = db
+      const gameItems = await db
         .select()
         .from(items)
         .where(and(eq(items.gameId, parsedGameId), eq(items.isActive, true)))
-        .orderBy(asc(items.price))
-        .all();
+        .orderBy(asc(items.price));
 
       return NextResponse.json({
         success: true,
@@ -59,12 +58,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Return all items if no filter
-    const allItems = db
+    const allItems = await db
       .select()
       .from(items)
       .where(eq(items.isActive, true))
-      .orderBy(asc(items.price))
-      .all();
+      .orderBy(asc(items.price));
 
     return NextResponse.json({
       success: true,

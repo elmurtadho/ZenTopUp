@@ -16,11 +16,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     await seedDatabase();
 
     // Find game by slug
-    const game = db
+    const gameResults = await db
       .select()
       .from(games)
-      .where(and(eq(games.slug, slug), eq(games.isActive, true)))
-      .get();
+      .where(and(eq(games.slug, slug), eq(games.isActive, true)));
+
+    const game = gameResults[0];
 
     if (!game) {
       return NextResponse.json(
@@ -30,12 +31,11 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     }
 
     // Find game items
-    const gameItems = db
+    const gameItems = await db
       .select()
       .from(items)
       .where(and(eq(items.gameId, game.id), eq(items.isActive, true)))
-      .orderBy(asc(items.price))
-      .all();
+      .orderBy(asc(items.price));
 
     // Parse serverList if string
     let parsedServerList = null;

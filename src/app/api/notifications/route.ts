@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { notifications } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { desc } from 'drizzle-orm';
 import { seedDatabase } from '@/db/seed';
 
 export async function GET(request: NextRequest) {
@@ -14,11 +14,10 @@ export async function GET(request: NextRequest) {
     // Ensure database is initialized & seeded
     await seedDatabase();
 
-    let allNotifs = db
+    let allNotifs = await db
       .select()
       .from(notifications)
-      .orderBy(desc(notifications.id))
-      .all();
+      .orderBy(desc(notifications.id));
 
     // Filter by user ID if provided
     if (userId) {
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const inserted = db
+    const inserted = await db
       .insert(notifications)
       .values({
         userId: userId || null,
@@ -84,12 +83,11 @@ export async function POST(request: NextRequest) {
         linkText: linkText || null,
         isRead: false,
       })
-      .returning()
-      .get();
+      .returning();
 
     return NextResponse.json({
       success: true,
-      data: inserted,
+      data: inserted[0],
       message: 'Notifikasi berhasil dibuat',
     });
   } catch (error) {

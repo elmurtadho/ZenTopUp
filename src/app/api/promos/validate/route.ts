@@ -22,11 +22,12 @@ export async function POST(request: NextRequest) {
     const normalizedCode = code.trim().toUpperCase();
 
     // Query promo by code
-    const promo = db
+    const promoResults = await db
       .select()
       .from(promos)
-      .where(and(eq(promos.code, normalizedCode), eq(promos.isActive, true)))
-      .get();
+      .where(and(eq(promos.code, normalizedCode), eq(promos.isActive, true)));
+
+    const promo = promoResults[0];
 
     if (!promo) {
       return NextResponse.json(

@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
     // 2. Find game & item
     let resolvedItem;
     if (itemId) {
-      resolvedItem = db
+      const itemResults = await db
         .select()
         .from(items)
-        .where(eq(items.id, Number(itemId)))
-        .get();
+        .where(eq(items.id, Number(itemId)));
+      resolvedItem = itemResults[0];
     }
 
     if (!resolvedItem) {
@@ -50,11 +50,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const resolvedGame = db
+    const gameResults = await db
       .select()
       .from(games)
-      .where(eq(games.id, resolvedItem.gameId))
-      .get();
+      .where(eq(games.id, resolvedItem.gameId));
+
+    const resolvedGame = gameResults[0];
 
     if (!resolvedGame) {
       return NextResponse.json(
@@ -64,11 +65,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Find payment method
-    const resolvedMethod = db
+    const methodResults = await db
       .select()
       .from(paymentMethods)
-      .where(eq(paymentMethods.id, paymentMethodId.toLowerCase()))
-      .get();
+      .where(eq(paymentMethods.id, paymentMethodId.toLowerCase()));
+
+    const resolvedMethod = methodResults[0];
 
     const adminFee = resolvedMethod ? resolvedMethod.adminFee : 0;
     const itemPrice = resolvedItem.price;
@@ -79,11 +81,12 @@ export async function POST(request: NextRequest) {
 
     if (promoCode && typeof promoCode === 'string' && promoCode.trim()) {
       const normalizedPromo = promoCode.trim().toUpperCase();
-      const promo = db
+      const promoResults = await db
         .select()
         .from(promos)
-        .where(and(eq(promos.code, normalizedPromo), eq(promos.isActive, true)))
-        .get();
+        .where(and(eq(promos.code, normalizedPromo), eq(promos.isActive, true)));
+
+      const promo = promoResults[0];
 
       if (promo && itemPrice >= promo.minPurchase) {
         if (!promo.gameSlug || promo.gameSlug === resolvedGame.slug) {
@@ -108,48 +111,42 @@ export async function POST(request: NextRequest) {
     const orderId = `ZEN-${Date.now().toString().slice(-4)}${randomSuffix}`;
 
     // 7. Insert into orders table
-    db.insert(orders)
-      .values({
-        id: orderId,
-        gameId: resolvedGame.id,
-        itemId: resolvedItem.id,
-        gameUserId: String(gameUserId),
-        serverId: serverId ? String(serverId) : null,
-        whatsapp: String(whatsapp),
-        email: email ? String(email) : null,
-        itemPrice,
-        discountAmount,
-        adminFee,
-        totalAmount,
-        promoCode: validPromoCode,
-        paymentMethod: resolvedMethod ? resolvedMethod.name : paymentMethodId,
-        status: 'pending',
-      })
-      .run();
+    await db.insert(orders).values({
+      id: orderId,
+      gameId: resolvedGame.id,
+      itemId: resolvedItem.id,
+      gameUserId: String(gameUserId),
+      serverId: serverId ? String(serverId) : null,
+      whatsapp: String(whatsapp),
+      email: email ? String(email) : null,
+      itemPrice,
+      discountAmount,
+      adminFee,
+      totalAmount,
+      promoCode: validPromoCode,
+      paymentMethod: resolvedMethod ? resolvedMethod.name : paymentMethodId,
+      status: 'pending',
+    });
 
     // 8. Generate payment reference & details
     const vaNumber = `8801${orderId.replace(/\D/g, '').padEnd(10, '7')}`;
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-    db.insert(payments)
-      .values({
-        orderId,
-        method: resolvedMethod ? resolvedMethod.name : paymentMethodId,
-        status: 'pending',
-        amount: totalAmount,
-        externalRef: vaNumber,
-      })
-      .run();
+    await db.insert(payments).values({
+      orderId,
+      method: resolvedMethod ? resolvedMethod.name : paymentMethodId,
+      status: 'pending',
+      amount: totalAmount,
+      externalRef: vaNumber,
+    });
 
     // 9. Insert Notification
-    db.insert(notifications)
-      .values({
-        orderId,
-        type: 'order_created',
-        title: `Pesanan ${orderId} Dibuat`,
-        message: `Menunggu pembayaran sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${resolvedItem.name} (${resolvedGame.name})`,
-      })
-      .run();
+    await db.insert(notifications).values({
+      orderId,
+      type: 'order_created',
+      title: `Pesanan ${orderId} Dibuat`,
+      message: `Menunggu pembayaran sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${resolvedItem.name} (${resolvedGame.name})`,
+    });
 
     return NextResponse.json({
       success: true,
@@ -198,11 +195,12 @@ export async function GET(request: NextRequest) {
 
     // Direct single order lookup
     if (orderId) {
-      const order = db
+      const orderResults = await db
         .select()
         .from(orders)
-        .where(eq(orders.id, orderId))
-        .get();
+        .where(eq(orders.id, orderId));
+
+      const order = orderResults[0];
 
       if (!order) {
         return NextResponse.json(
@@ -211,8 +209,10 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const game = db.select().from(games).where(eq(games.id, order.gameId)).get();
-      const item = db.select().from(items).where(eq(items.id, order.itemId)).get();
+      const gameResults = await db.select().from(games).where(eq(games.id, order.gameId));
+      const itemResults = await db.select().from(items).where(eq(items.id, order.itemId));
+      const game = gameResults[0];
+      const item = itemResults[0];
 
       return NextResponse.json({
         success: true,
@@ -227,11 +227,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all orders
-    let allOrders = db.select().from(orders).all();
+    const allOrders = await db.select().from(orders);
 
     // Fetch games & items lookup maps
-    const allGames = db.select().from(games).all();
-    const allItems = db.select().from(items).all();
+    const allGames = await db.select().from(games);
+    const allItems = await db.select().from(items);
     const gameMap = new Map(allGames.map((g) => [g.id, g]));
     const itemMap = new Map(allItems.map((i) => [i.id, i]));
 

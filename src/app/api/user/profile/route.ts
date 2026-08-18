@@ -11,11 +11,12 @@ export async function GET(request: NextRequest) {
 
     await seedDatabase();
 
-    const user = db
+    const userResults = await db
       .select()
       .from(users)
-      .where(eq(users.id, Number(userId)))
-      .get();
+      .where(eq(users.id, Number(userId)));
+
+    const user = userResults[0];
 
     if (!user) {
       return NextResponse.json(
@@ -25,11 +26,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Count user transactions
-    const userOrders = db
-      .select()
-      .from(orders)
-      .where(eq(orders.whatsapp, user.phone || '081234567890'))
-      .all();
+    const allOrders = await db.select().from(orders);
+    const userOrders = allOrders.filter(
+      (o) => o.whatsapp === (user.phone || '081234567890')
+    );
 
     const totalSpent = userOrders
       .filter((o) => o.status === 'berhasil')
@@ -79,11 +79,12 @@ async function handleUpdateProfile(request: NextRequest) {
 
     await seedDatabase();
 
-    const existing = db
+    const existingUsers = await db
       .select()
       .from(users)
-      .where(eq(users.id, Number(userId)))
-      .get();
+      .where(eq(users.id, Number(userId)));
+
+    const existing = existingUsers[0];
 
     if (!existing) {
       return NextResponse.json(
@@ -110,7 +111,7 @@ async function handleUpdateProfile(request: NextRequest) {
       updatedPasswordHash = newPassword;
     }
 
-    const updated = db
+    const updateResults = await db
       .update(users)
       .set({
         name: name ? name.trim() : existing.name,
@@ -121,8 +122,9 @@ async function handleUpdateProfile(request: NextRequest) {
         updatedAt: new Date().toISOString(),
       })
       .where(eq(users.id, Number(userId)))
-      .returning()
-      .get();
+      .returning();
+
+    const updated = updateResults[0];
 
     return NextResponse.json({
       success: true,

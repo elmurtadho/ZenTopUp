@@ -40,11 +40,12 @@ export async function POST(request: NextRequest) {
     await seedDatabase();
 
     // 2. Check for duplicate email or phone
-    const existing = db
+    const existingUsers = await db
       .select()
       .from(users)
-      .where(or(eq(users.email, email.trim().toLowerCase()), eq(users.phone, phone.trim())))
-      .get();
+      .where(or(eq(users.email, email.trim().toLowerCase()), eq(users.phone, phone.trim())));
+
+    const existing = existingUsers[0];
 
     if (existing) {
       if (existing.email === email.trim().toLowerCase()) {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Insert new user
-    const newUser = db
+    const insertResult = await db
       .insert(users)
       .values({
         name: name.trim(),
@@ -73,8 +74,9 @@ export async function POST(request: NextRequest) {
         memberLevel: 'Bronze',
         role: 'user',
       })
-      .returning()
-      .get();
+      .returning();
+
+    const newUser = insertResult[0];
 
     // 4. Send welcome notification
     await createNotification({

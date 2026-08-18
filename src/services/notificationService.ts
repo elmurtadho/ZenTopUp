@@ -1,6 +1,5 @@
 import { db } from '@/db';
-import { notifications, notificationSettings } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { notifications } from '@/db/schema';
 
 export interface CreateNotificationParams {
   userId?: number | null;
@@ -17,7 +16,7 @@ export interface CreateNotificationParams {
  */
 export async function createNotification(params: CreateNotificationParams) {
   try {
-    const inserted = db
+    const inserted = await db
       .insert(notifications)
       .values({
         userId: params.userId || null,
@@ -29,11 +28,11 @@ export async function createNotification(params: CreateNotificationParams) {
         linkText: params.linkText || null,
         isRead: false,
       })
-      .returning()
-      .get();
+      .returning();
 
-    console.log(`[NotificationService] Created notification: ${params.title} (ID: ${inserted.id})`);
-    return inserted;
+    const record = inserted[0];
+    console.log(`[NotificationService] Created notification: ${params.title} (ID: ${record?.id})`);
+    return record;
   } catch (error) {
     console.error('[NotificationService] Failed to create notification:', error);
     return null;

@@ -34,11 +34,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = db
+    const result = await db
       .select()
       .from(promos)
-      .where(and(...conditions))
-      .all();
+      .where(and(...conditions));
 
     // Parse terms JSON array
     const formattedResult = result.map((p) => {

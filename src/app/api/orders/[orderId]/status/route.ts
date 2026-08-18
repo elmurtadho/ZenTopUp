@@ -16,11 +16,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     // Ensure database is seeded
     await seedDatabase();
 
-    const order = db
+    const orderResults = await db
       .select()
       .from(orders)
-      .where(eq(orders.id, orderId))
-      .get();
+      .where(eq(orders.id, orderId));
+
+    const order = orderResults[0];
 
     if (!order) {
       // Return mock structure if it's a random generated demo order ID
@@ -39,9 +40,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       });
     }
 
-    const game = db.select().from(games).where(eq(games.id, order.gameId)).get();
-    const item = db.select().from(items).where(eq(items.id, order.itemId)).get();
-    const payment = db.select().from(payments).where(eq(payments.orderId, order.id)).get();
+    const gameResults = await db.select().from(games).where(eq(games.id, order.gameId));
+    const itemResults = await db.select().from(items).where(eq(items.id, order.itemId));
+    const paymentResults = await db.select().from(payments).where(eq(payments.orderId, order.id));
+    const game = gameResults[0];
+    const item = itemResults[0];
+    const payment = paymentResults[0];
 
     return NextResponse.json({
       success: true,
@@ -86,31 +90,34 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     // Ensure database is seeded
     await seedDatabase();
 
-    const order = db
+    const orderResults = await db
       .select()
       .from(orders)
-      .where(eq(orders.id, orderId))
-      .get();
+      .where(eq(orders.id, orderId));
+
+    const order = orderResults[0];
 
     if (order) {
-      db.update(orders)
+      await db
+        .update(orders)
         .set({
           status: newStatus,
           updatedAt: new Date().toISOString(),
         })
-        .where(eq(orders.id, orderId))
-        .run();
+        .where(eq(orders.id, orderId));
 
-      db.update(payments)
+      await db
+        .update(payments)
         .set({
           status: newStatus === 'berhasil' ? 'berhasil' : 'pending',
           paidAt: newStatus === 'berhasil' ? new Date().toISOString() : null,
         })
-        .where(eq(payments.orderId, orderId))
-        .run();
+        .where(eq(payments.orderId, orderId));
 
-      const game = db.select().from(games).where(eq(games.id, order.gameId)).get();
-      const item = db.select().from(items).where(eq(items.id, order.itemId)).get();
+      const gameResults = await db.select().from(games).where(eq(games.id, order.gameId));
+      const itemResults = await db.select().from(items).where(eq(items.id, order.itemId));
+      const game = gameResults[0];
+      const item = itemResults[0];
 
       await triggerOrderStatusNotification(
         orderId,

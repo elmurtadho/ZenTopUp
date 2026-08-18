@@ -47,14 +47,14 @@ export async function GET(request: NextRequest) {
     // Sorting
     let result;
     if (sort === 'rating') {
-      result = query.orderBy(desc(games.rating)).all();
+      result = await query.orderBy(desc(games.rating));
     } else if (sort === 'price-asc') {
-      result = query.orderBy(asc(games.minPrice)).all();
+      result = await query.orderBy(asc(games.minPrice));
     } else if (sort === 'name-asc') {
-      result = query.orderBy(asc(games.name)).all();
+      result = await query.orderBy(asc(games.name));
     } else {
       // Default: popular first
-      result = query.orderBy(desc(games.isPopular), asc(games.name)).all();
+      result = await query.orderBy(desc(games.isPopular), asc(games.name));
     }
 
     return NextResponse.json({

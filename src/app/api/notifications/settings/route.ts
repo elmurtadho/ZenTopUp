@@ -8,11 +8,12 @@ export async function GET(request: NextRequest) {
   try {
     await seedDatabase();
 
-    let settings = db.select().from(notificationSettings).get();
+    const results = await db.select().from(notificationSettings);
+    let settings = results[0];
 
     // If no row exists yet, insert default settings
     if (!settings) {
-      settings = db
+      const inserted = await db
         .insert(notificationSettings)
         .values({
           userId: 1,
@@ -23,8 +24,8 @@ export async function GET(request: NextRequest) {
           inappOrderUpdate: true,
           inappMaintenance: true,
         })
-        .returning()
-        .get();
+        .returning();
+      settings = inserted[0];
     }
 
     return NextResponse.json({
@@ -53,11 +54,12 @@ async function handleUpdate(request: NextRequest) {
     const body = await request.json();
     await seedDatabase();
 
-    let existing = db.select().from(notificationSettings).get();
+    const existingResults = await db.select().from(notificationSettings);
+    let existing = existingResults[0];
 
     let updated;
     if (existing) {
-      updated = db
+      const updateResult = await db
         .update(notificationSettings)
         .set({
           whatsappTxStatus:
@@ -87,10 +89,10 @@ async function handleUpdate(request: NextRequest) {
           updatedAt: new Date().toISOString(),
         })
         .where(eq(notificationSettings.id, existing.id))
-        .returning()
-        .get();
+        .returning();
+      updated = updateResult[0];
     } else {
-      updated = db
+      const insertResult = await db
         .insert(notificationSettings)
         .values({
           userId: 1,
@@ -101,8 +103,8 @@ async function handleUpdate(request: NextRequest) {
           inappOrderUpdate: body.inappOrderUpdate ?? true,
           inappMaintenance: body.inappMaintenance ?? true,
         })
-        .returning()
-        .get();
+        .returning();
+      updated = insertResult[0];
     }
 
     return NextResponse.json({

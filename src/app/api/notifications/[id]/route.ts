@@ -12,11 +12,12 @@ export async function GET(
     const { id } = await params;
     await seedDatabase();
 
-    const notif = db
+    const notifResults = await db
       .select()
       .from(notifications)
-      .where(eq(notifications.id, Number(id)))
-      .get();
+      .where(eq(notifications.id, Number(id)));
+
+    const notif = notifResults[0];
 
     if (!notif) {
       return NextResponse.json(
@@ -46,14 +47,15 @@ export async function PATCH(
 
     await seedDatabase();
 
-    const updated = db
+    const updated = await db
       .update(notifications)
       .set({ isRead })
       .where(eq(notifications.id, Number(id)))
-      .returning()
-      .get();
+      .returning();
 
-    if (!updated) {
+    const record = updated[0];
+
+    if (!record) {
       return NextResponse.json(
         { success: false, message: 'Notifikasi tidak ditemukan' },
         { status: 404 }
@@ -62,7 +64,7 @@ export async function PATCH(
 
     return NextResponse.json({
       success: true,
-      data: updated,
+      data: record,
       message: `Notifikasi berhasil ditandai sebagai ${isRead ? 'sudah dibaca' : 'belum dibaca'}`,
     });
   } catch (error) {
@@ -82,9 +84,9 @@ export async function DELETE(
     const { id } = await params;
     await seedDatabase();
 
-    db.delete(notifications)
-      .where(eq(notifications.id, Number(id)))
-      .run();
+    await db
+      .delete(notifications)
+      .where(eq(notifications.id, Number(id)));
 
     return NextResponse.json({
       success: true,
