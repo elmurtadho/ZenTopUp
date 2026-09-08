@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MOCK_NOTIFICATIONS, MockNotification } from '@/data/mockNotifications';
 import { 
   Bell, 
@@ -12,26 +13,35 @@ import {
   Tag, 
   Info, 
   ArrowRight, 
-  Trash2,
-  Filter,
-  Sparkles,
-  Zap
+  Trash2, 
+  Filter, 
+  Sparkles, 
+  Zap,
+  ChevronRight
 } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 
 export default function NotifikasiPage() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<MockNotification[]>(MOCK_NOTIFICATIONS);
   const [activeTab, setActiveTab] = useState<'semua' | 'transaksi' | 'promo' | 'system'>('semua');
   const [unreadOnly, setUnreadOnly] = useState(false);
 
   const handleMarkAllAsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    fetch('/api/notifications/read-all', { method: 'POST' }).catch(() => {});
   };
 
   const handleMarkAsRead = (id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
+  };
+
+  const handleCardClick = (notif: MockNotification) => {
+    handleMarkAsRead(notif.id);
+    const target = notif.linkHref || `/notifikasi/${notif.id}`;
+    router.push(target);
   };
 
   const filteredNotifications = notifications.filter((item) => {
@@ -164,7 +174,7 @@ export default function NotifikasiPage() {
             {filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
-                onClick={() => handleMarkAsRead(notif.id)}
+                onClick={() => handleCardClick(notif)}
                 className={`rounded-2xl border p-5 transition duration-200 flex items-start justify-between gap-4 cursor-pointer group ${
                   notif.isRead
                     ? 'bg-[#111827] border-slate-800/80 hover:border-slate-700 opacity-80 hover:opacity-100'
@@ -194,21 +204,15 @@ export default function NotifikasiPage() {
                       {notif.message}
                     </p>
 
-                    <div className="flex items-center gap-3 pt-2">
+                    <div className="flex items-center justify-between pt-2">
                       <span className="text-[11px] text-slate-500 font-medium">
                         {notif.createdAt}
                       </span>
 
-                      {notif.linkHref && (
-                        <Link
-                          href={notif.linkHref}
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-blue-400 hover:text-blue-300 transition"
-                        >
-                          <span>{notif.linkText || 'Lihat Detail'}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                      )}
+                      <div className="inline-flex items-center gap-1 text-xs font-bold text-blue-400 group-hover:text-cyan-300 transition">
+                        <span>{notif.linkText || 'Buka Halaman'}</span>
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
                     </div>
                   </div>
                 </div>
