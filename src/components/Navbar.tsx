@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   Zap, 
   Search, 
@@ -16,7 +17,8 @@ import {
   Settings,
   Receipt,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Flame
 } from 'lucide-react';
 import SearchModal from './SearchModal';
 import NotificationBell from './NotificationBell';
@@ -28,6 +30,7 @@ export default function Navbar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  const pathname = usePathname();
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -51,94 +54,141 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+    setIsUserMenuOpen(false);
+  }, [pathname]);
+
+  const navLinks = [
+    {
+      href: '/',
+      label: 'Katalog Game',
+      icon: Gamepad2,
+      iconColor: 'text-blue-400',
+    },
+    {
+      href: '/promo',
+      label: 'Promo Kilat',
+      icon: Flame,
+      iconColor: 'text-amber-400',
+      badge: 'HOT',
+    },
+    {
+      href: '/riwayat',
+      label: 'Lacak Pesanan',
+      icon: Clock,
+      iconColor: 'text-cyan-400',
+    },
+    {
+      href: '/metode-pembayaran',
+      label: 'Cara Bayar',
+      icon: ShieldCheck,
+      iconColor: 'text-emerald-400',
+    },
+  ];
+
   return (
     <>
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#0b0f19]/90 border-b border-slate-800">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#0b0f19]/85 border-b border-slate-800/80 shadow-lg shadow-black/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
+          {/* Main single-line container */}
+          <div className="flex items-center justify-between h-16 gap-3">
+            
+            {/* 1. Brand Logo */}
+            <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-md shadow-blue-500/25 group-hover:scale-105 transition-all duration-200">
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-1">
-                  Toko<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Gem</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-extrabold text-xl tracking-tight text-white">
+                  Toko<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-300">Gem</span>
                 </span>
-                <span className="text-[10px] text-slate-400 tracking-wider font-medium uppercase">
-                  Fast &amp; Official Gaming TopUp
+                <span className="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-blue-500/10 text-cyan-400 border border-blue-500/20">
+                  Resmi 24 Jam
                 </span>
               </div>
             </Link>
 
-            {/* Desktop Nav Links */}
-            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-              <Link 
-                href="/" 
-                className="px-3.5 py-2 rounded-lg text-sm font-medium text-white hover:bg-slate-800/80 transition-colors flex items-center gap-2"
-              >
-                <Gamepad2 className="w-4 h-4 text-blue-400" />
-                <span>Jelajah Game</span>
-              </Link>
-              <Link 
-                href="/promo" 
-                className="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors flex items-center gap-2"
-              >
-                <Tag className="w-4 h-4 text-emerald-400" />
-                <span>Promo Diskon</span>
-              </Link>
-              <Link 
-                href="/riwayat" 
-                className="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors flex items-center gap-2"
-              >
-                <Clock className="w-4 h-4 text-cyan-400" />
-                <span>Riwayat Transaksi</span>
-              </Link>
-              <Link 
-                href="/metode-pembayaran" 
-                className="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors flex items-center gap-2"
-              >
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>Metode Bayar</span>
-              </Link>
+            {/* 2. Desktop Navigation Links */}
+            <nav className="hidden md:flex items-center gap-1 lg:gap-1.5">
+              {navLinks.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 shadow-sm'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/70 border border-transparent'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${item.iconColor}`} />
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 uppercase tracking-tight shadow-sm">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* 3. Action Group (Search, Notifications, Profile/Login) */}
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+              
+              {/* Quick Search Spotlight Button */}
               <button
+                type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-slate-400 hover:text-white hover:border-slate-600 flex items-center gap-3 text-xs transition group cursor-pointer"
+                className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/60 hover:border-slate-500 text-slate-400 hover:text-white text-xs transition cursor-pointer group shadow-sm"
+                title="Cari game (Ctrl+K)"
               >
-                <Search className="w-3.5 h-3.5 text-blue-400 group-hover:text-blue-300" />
-                <span>Cari game apa saja...</span>
-                <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-slate-400">
+                <Search className="w-3.5 h-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                <span className="hidden md:inline">Cari game...</span>
+                <kbd className="hidden lg:inline-block px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-slate-400">
                   Ctrl K
                 </kbd>
               </button>
 
+              {/* Mobile search icon button */}
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(true)}
+                className="sm:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
+                aria-label="Cari Game"
+              >
+                <Search className="w-5 h-5 text-blue-400" />
+              </button>
+
+              {/* Notifications */}
               <NotificationBell />
 
-              {/* User Account Menu or Login Button */}
+              {/* User Profile Dropdown or Login */}
               {user ? (
                 <div className="relative" ref={userMenuRef}>
                   <button
+                    type="button"
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
+                    className="flex items-center gap-2 p-1 sm:pr-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition cursor-pointer"
                   >
                     <img
                       src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120'}
                       alt={user.name}
-                      className="w-8 h-8 rounded-lg object-cover border border-slate-700"
+                      className="w-7 h-7 rounded-lg object-cover border border-slate-700"
                     />
-                    <div className="text-left">
-                      <span className="text-xs font-bold text-white block leading-tight truncate max-w-[100px]">
-                        {user.name}
+                    <div className="hidden md:block text-left leading-tight">
+                      <span className="text-xs font-bold text-white block truncate max-w-[90px]">
+                        {user.name.split(' ')[0]}
                       </span>
-                      <span className="text-[10px] text-amber-400 font-semibold block">
+                      <span className="text-[9px] text-amber-400 font-medium block uppercase tracking-wider">
                         {user.memberLevel || 'Member'}
                       </span>
                     </div>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
                   </button>
 
                   {/* Dropdown Menu */}
@@ -178,6 +228,7 @@ export default function Navbar() {
 
                       <div className="pt-1 mt-1 border-t border-slate-800">
                         <button
+                          type="button"
                           onClick={() => {
                             logout();
                             setIsUserMenuOpen(false);
@@ -194,111 +245,89 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/masuk"
-                  className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-200 hover:text-white hover:bg-slate-800 transition border border-slate-700/60 flex items-center gap-2"
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-md shadow-blue-600/20 hover:shadow-blue-500/40 transition flex items-center gap-1.5 whitespace-nowrap"
                 >
-                  <User className="w-4 h-4" />
+                  <User className="w-3.5 h-3.5" />
                   <span>Masuk</span>
                 </Link>
               )}
-            </div>
 
-            {/* Mobile Actions */}
-            <div className="flex md:hidden items-center gap-1">
+              {/* Mobile Hamburger Toggle Button */}
               <button
-                onClick={() => setIsSearchOpen(true)}
-                className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800"
-                aria-label="Cari Game"
-              >
-                <Search className="w-5 h-5 text-blue-400" />
-              </button>
-              <NotificationBell />
-              <button
+                type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800"
+                className="md:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition"
                 aria-label="Toggle Menu"
               >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {isOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
               </button>
+
             </div>
+
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile Dropdown Menu */}
         {isOpen && (
-          <div className="md:hidden border-t border-slate-800 bg-[#0d1322] px-4 pt-3 pb-5 space-y-2">
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                setIsSearchOpen(true);
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 text-left"
-            >
-              <Search className="w-5 h-5 text-blue-400" />
-              <span>Cari Game</span>
-            </button>
-            <Link
-              href="/"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-white hover:bg-slate-800"
-            >
-              <Gamepad2 className="w-5 h-5 text-blue-400" />
-              <span>Jelajah Game</span>
-            </Link>
-            <Link
-              href="/promo"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800"
-            >
-              <Tag className="w-5 h-5 text-emerald-400" />
-              <span>Promo Diskon</span>
-            </Link>
-            <Link
-              href="/riwayat"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800"
-            >
-              <Clock className="w-5 h-5 text-cyan-400" />
-              <span>Riwayat Transaksi</span>
-            </Link>
-            <Link
-              href="/metode-pembayaran"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800"
-            >
-              <ShieldCheck className="w-5 h-5 text-amber-400" />
-              <span>Metode Pembayaran</span>
-            </Link>
+          <div className="md:hidden border-t border-slate-800/90 bg-[#0d1322]/95 backdrop-blur-xl px-4 py-3 space-y-2 animate-in slide-in-from-top-2 duration-150">
+            {navLinks.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition ${
+                    isActive
+                      ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${item.iconColor}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 uppercase tracking-tight">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
 
-            <div className="pt-3 border-t border-slate-800">
+            <div className="pt-2 border-t border-slate-800">
               {user ? (
-                <div className="space-y-2">
-                  <div className="px-3 py-2 bg-slate-900 rounded-xl flex items-center gap-3">
+                <div className="space-y-1.5">
+                  <div className="px-3.5 py-2 bg-slate-900/90 rounded-xl flex items-center gap-3 border border-slate-800">
                     <img
-                      src={user.avatar}
+                      src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120'}
                       alt={user.name}
-                      className="w-10 h-10 rounded-lg object-cover"
+                      className="w-9 h-9 rounded-lg object-cover"
                     />
-                    <div>
+                    <div className="leading-tight">
                       <span className="text-sm font-bold text-white block">{user.name}</span>
-                      <span className="text-xs text-amber-400">{user.memberLevel}</span>
+                      <span className="text-xs text-amber-400 font-semibold">{user.memberLevel}</span>
                     </div>
                   </div>
                   <Link
                     href="/akun"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800"
+                    className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800"
                   >
-                    <User className="w-5 h-5 text-blue-400" />
+                    <User className="w-4 h-4 text-blue-400" />
                     <span>Profil Saya</span>
                   </Link>
                   <button
+                    type="button"
                     onClick={() => {
                       logout();
                       setIsOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 text-left"
+                    className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-red-500/10 text-left cursor-pointer"
                   >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-4 h-4" />
                     <span>Keluar Akun</span>
                   </button>
                 </div>
@@ -306,10 +335,10 @@ export default function Navbar() {
                 <Link
                   href="/masuk"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-sm shadow-md transition"
                 >
                   <User className="w-4 h-4" />
-                  <span>Masuk / Daftar Akun</span>
+                  <span>Masuk Akun</span>
                 </Link>
               )}
             </div>
