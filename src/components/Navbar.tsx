@@ -63,7 +63,7 @@ export default function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-1">
-                  Zen<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">TopUp</span>
+                  Toko<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Gem</span>
                 </span>
                 <span className="text-[10px] text-slate-400 tracking-wider font-medium uppercase">
                   Fast &amp; Official Gaming TopUp

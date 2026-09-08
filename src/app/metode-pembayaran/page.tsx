@@ -40,7 +40,7 @@ export default function PaymentMethodsPage() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
-            Metode Pembayaran Resmi ZenTopUp
+            Metode Pembayaran Resmi TokoGem
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto mb-8">
             Bayar top up game dengan cepat, aman, dan mudah lewat berbagai saluran pembayaran favorit kamu di Indonesia.

@@ -71,7 +71,7 @@ export const users = sqliteTable('users', {
 
 // Orders table
 export const orders = sqliteTable('orders', {
-  id: text('id').primaryKey(), // e.g. ZEN-123456
+  id: text('id').primaryKey(), // e.g. GEM-123456
   userId: integer('user_id').references(() => users.id),
   gameId: integer('game_id')
     .notNull()

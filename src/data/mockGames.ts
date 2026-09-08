@@ -14,7 +14,7 @@ export const CATEGORIES = [
 export const MOCK_PROMOS: Promo[] = [
   {
     id: 'promo-1',
-    code: 'ZENMLBB50',
+    code: 'GEMMLBB50',
     title: 'Diskon 50% Mobile Legends Weekend',
     description: 'Dapatkan potongan 50% hingga Rp 25.000 untuk top up Diamond MLBB.',
     discountType: 'percent',
@@ -30,7 +30,7 @@ export const MOCK_PROMOS: Promo[] = [
   },
   {
     id: 'promo-2',
-    code: 'ZENVALO',
+    code: 'GEMVALO',
     title: 'Cashback 20% Valorant Points',
     description: 'Beli VP lebih hemat dengan potongan langsung Rp 15.000.',
     discountType: 'fixed',
@@ -45,9 +45,9 @@ export const MOCK_PROMOS: Promo[] = [
   },
   {
     id: 'promo-3',
-    code: 'NEWZEN',
+    code: 'NEWGEM',
     title: 'Pengguna Baru Potongan Rp 10.000',
-    description: 'Selamat datang di ZenTopUp! Gunakan kode NEWZEN untuk transaksi pertama.',
+    description: 'Selamat datang di TokoGem! Gunakan kode NEWGEM untuk transaksi pertama.',
     discountType: 'fixed',
     amount: 10000,
     minPurchase: 20000,

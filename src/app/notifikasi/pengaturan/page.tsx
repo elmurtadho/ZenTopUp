@@ -115,7 +115,7 @@ export default function PengaturanNotifikasiPage() {
             Pengaturan Notifikasi
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Atur saluran dan jenis informasi yang ingin kamu terima dari ZenTopUp.
+            Atur saluran dan jenis informasi yang ingin kamu terima dari TokoGem.
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export default function PengaturanNotifikasiPage() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-white">Saluran WhatsApp</h2>
-                <p className="text-xs text-slate-400">Pemberitahuan instan via bot resmi WhatsApp ZenTopUp</p>
+                <p className="text-xs text-slate-400">Pemberitahuan instan via bot resmi WhatsApp TokoGem</p>
               </div>
             </div>
 

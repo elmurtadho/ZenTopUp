@@ -85,7 +85,7 @@ export default function PromoForm({
                   setInputCode(e.target.value.toUpperCase());
                   setError(null);
                 }}
-                placeholder="Masukkan kode promo (misal: ZENMLBB50)"
+                placeholder="Masukkan kode promo (misal: GEMMLBB50)"
                 className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-800 focus:border-blue-500 text-white text-sm uppercase font-mono outline-none transition"
               />
             </div>

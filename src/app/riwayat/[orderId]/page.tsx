@@ -86,7 +86,7 @@ export default function DetailTransaksiPage({ params }: PageProps) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-extrabold text-lg text-white tracking-tight">ZenTopUp</span>
+                  <span className="font-extrabold text-lg text-white tracking-tight">TokoGem</span>
                   <span className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-semibold border border-blue-500/30">
                     Official Receipt
                   </span>
@@ -95,7 +95,7 @@ export default function DetailTransaksiPage({ params }: PageProps) {
                   Bukti Pembayaran &amp; Pengiriman
                 </h1>
                 <p className="text-xs text-slate-400 mt-1">
-                  Transaksi resmi yang diproses oleh sistem otomatis ZenTopUp
+                  Transaksi resmi yang diproses oleh sistem otomatis TokoGem
                 </p>
               </div>
 
@@ -198,7 +198,7 @@ export default function DetailTransaksiPage({ params }: PageProps) {
             {/* Guarantee footnote */}
             <div className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5 pt-2">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Bukti invoice ini sah dan dikeluarkan otomatis oleh ZenTopUp Indonesia.</span>
+              <span>Bukti invoice ini sah dan dikeluarkan otomatis oleh TokoGem Indonesia.</span>
             </div>
 
           </div>

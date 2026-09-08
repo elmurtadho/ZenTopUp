@@ -36,7 +36,7 @@ const STATUS_CONFIG = {
     badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
     badgeText: '✓ Pembayaran Berhasil',
     title: 'Transaksi Sukses & Item Terkirim!',
-    description: 'Item top up telah otomatis ditambahkan ke akun game kamu. Terima kasih telah menggunakan ZenTopUp!',
+    description: 'Item top up telah otomatis ditambahkan ke akun game kamu. Terima kasih telah menggunakan TokoGem!',
   },
   pending: {
     icon: <Clock className="w-10 h-10 text-amber-400" />,
@@ -59,7 +59,7 @@ const STATUS_CONFIG = {
 };
 
 export default function PaymentStatusPage({
-  orderId = 'ZEN-000000',
+  orderId = 'GEM-000000',
   status = 'success',
   gameName = 'Mobile Legends: Bang Bang',
   itemName = 'Weekly Diamond Pass',
@@ -173,7 +173,7 @@ export default function PaymentStatusPage({
           {/* Trust badge */}
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Dilindungi oleh sistem keamanan enkripsi ZenTopUp</span>
+            <span>Dilindungi oleh sistem keamanan enkripsi TokoGem</span>
           </div>
         </div>
       </div>

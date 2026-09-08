@@ -114,7 +114,7 @@ export default function PaymentPage({ params }: PageProps) {
                 Pembayaran Sukses &amp; Item Terkirim!
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-md mx-auto">
-                Item top up telah otomatis ditambahkan ke akun game kamu. Terima kasih telah menggunakan ZenTopUp!
+                Item top up telah otomatis ditambahkan ke akun game kamu. Terima kasih telah menggunakan TokoGem!
               </p>
             </div>
 
@@ -295,7 +295,7 @@ export default function PaymentPage({ params }: PageProps) {
 
                 <div className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Transaksi dijamin 100% aman &amp; instan oleh ZenTopUp</span>
+                  <span>Transaksi dijamin 100% aman &amp; instan oleh TokoGem</span>
                 </div>
               </div>
             </div>

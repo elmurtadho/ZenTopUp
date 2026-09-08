@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     await createNotification({
       userId: newUser.id,
       type: 'promo',
-      title: 'Selamat Bergabung di ZenTopUp!',
+      title: 'Selamat Bergabung di TokoGem!',
       message: `Hai ${newUser.name}, akun kamu telah aktif. Nikmati promo diskon spesial pengguna baru hingga Rp 10.000!`,
       linkHref: '/promo',
       linkText: 'Klaim Voucher Pengguna Baru',
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           memberLevel: newUser.memberLevel,
           role: newUser.role,
         },
-        token: `zen_jwt_${newUser.id}_${Date.now()}`,
+        token: `tokogem_jwt_${newUser.id}_${Date.now()}`,
       },
     });
   } catch (error) {

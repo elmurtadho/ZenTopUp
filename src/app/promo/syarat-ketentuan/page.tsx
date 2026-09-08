@@ -26,10 +26,10 @@ export default function PromoTermsPage() {
             <span>Dokumen Resmi Ketentuan Promo</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Syarat &amp; Ketentuan Promo ZenTopUp
+            Syarat &amp; Ketentuan Promo TokoGem
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            Harap membaca syarat dan ketentuan umum serta ketentuan khusus promo sebelum menggunakan kode voucher pada layanan ZenTopUp.
+            Harap membaca syarat dan ketentuan umum serta ketentuan khusus promo sebelum menggunakan kode voucher pada layanan TokoGem.
           </p>
         </div>
 
@@ -43,10 +43,10 @@ export default function PromoTermsPage() {
               <span>Ketentuan Umum Penggunaan Promo</span>
             </h2>
             <ul className="list-disc list-inside space-y-2 text-xs text-slate-400 pl-2">
-              <li>Kode promo hanya berlaku untuk transaksi top up di website resmi ZenTopUp.</li>
+              <li>Kode promo hanya berlaku untuk transaksi top up di website resmi TokoGem.</li>
               <li>Satu kode promo hanya dapat digunakan satu kali per transaksi per akun/nomor WhatsApp.</li>
               <li>Promo tidak dapat diuangkan, ditukar, atau digabungkan dengan program promosi lain kecuali dinyatakan berbeda.</li>
-              <li>ZenTopUp berhak membatalkan transaksi atau membekukan voucher jika ditemukan indikasi kecurangan atau pelanggaran hukum.</li>
+              <li>TokoGem berhak membatalkan transaksi atau membekukan voucher jika ditemukan indikasi kecurangan atau pelanggaran hukum.</li>
             </ul>
           </div>
 

@@ -108,7 +108,7 @@ export default function DaftarPage() {
               <Zap className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-2xl font-extrabold text-white">
-              Daftar Akun ZenTopUp
+              Daftar Akun TokoGem
             </h1>
             <p className="text-xs text-slate-400">
               Buat akun gratis untuk riwayat transaksi lengkap dan promo eksklusif
@@ -129,7 +129,7 @@ export default function DaftarPage() {
               </div>
               <h3 className="text-base font-bold text-white">Pendaftaran Berhasil!</h3>
               <p className="text-xs text-slate-300">
-                Selamat bergabung di ZenTopUp! Mengalihkan ke beranda...
+                Selamat bergabung di TokoGem! Mengalihkan ke beranda...
               </p>
             </div>
           ) : (
@@ -236,7 +236,7 @@ export default function DaftarPage() {
                   <Link href="/promo/syarat-ketentuan" className="text-blue-400 hover:underline">
                     Syarat &amp; Ketentuan
                   </Link>{' '}
-                  serta Kebijakan Privasi ZenTopUp.
+                  serta Kebijakan Privasi TokoGem.
                 </span>
               </label>
 

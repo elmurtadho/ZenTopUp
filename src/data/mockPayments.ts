@@ -92,7 +92,7 @@ export const MOCK_PAYMENT_METHODS: PaymentMethod[] = [
     instructions: [
       'Buka aplikasi Livin by Mandiri.',
       'Pilih menu Bayar > Multi Payment.',
-      'Pilih penyedia jasa ZenTopUp dan masukkan nomor VA.',
+      'Pilih penyedia jasa TokoGem dan masukkan nomor VA.',
       'Konfirmasi pembayaran.',
     ],
   },
@@ -130,7 +130,7 @@ export const MOCK_PAYMENT_METHODS: PaymentMethod[] = [
     adminFee: 3500,
     instructions: [
       'Kunjungi gerai Indomaret terdekat.',
-      'Beritahu kasir ingin melakukan pembayaran ZenTopUp / Merchant.',
+      'Beritahu kasir ingin melakukan pembayaran TokoGem / Merchant.',
       'Tunjukkan kode pembayaran ke kasir dan bayar secara tunai.',
     ],
   },

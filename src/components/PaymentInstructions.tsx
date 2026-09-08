@@ -66,7 +66,7 @@ export default function PaymentInstructions({ paymentMethod }: PaymentInstructio
           <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-2 text-[11px] text-slate-400">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
-              Pembayaran diverifikasi otomatis oleh sistem ZenTopUp. Item akan dikirim segera setelah konfirmasi.
+              Pembayaran diverifikasi otomatis oleh sistem TokoGem. Item akan dikirim segera setelah konfirmasi.
             </span>
           </div>
         </div>

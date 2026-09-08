@@ -13,13 +13,13 @@ export function middleware(request: NextRequest) {
   );
 
   if (isProtected) {
-    const token = request.cookies.get('zen_token')?.value;
+    const token = request.cookies.get('tokogem_token')?.value || request.cookies.get('zen_token')?.value;
     const authHeader = request.headers.get('authorization');
 
     // Note: Since demo mode allows client-side simulated auth via localStorage,
     // we also permit request through with header tagging or verify cookie
     const response = NextResponse.next();
-    response.headers.set('x-zen-auth-checked', 'true');
+    response.headers.set('x-tokogem-auth-checked', 'true');
     return response;
   }
 

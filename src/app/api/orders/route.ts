@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // 6. Generate Unique Order ID
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const orderId = `ZEN-${Date.now().toString().slice(-4)}${randomSuffix}`;
+    const orderId = `GEM-${Date.now().toString().slice(-4)}${randomSuffix}`;
 
     // 7. Insert into orders table
     await db.insert(orders).values({

@@ -16,12 +16,12 @@ export default function HomePage() {
       {/* Active Promos and Coupons */}
       <PromoSection />
 
-      {/* Keunggulan Layanan ZenTopUp */}
+      {/* Keunggulan Layanan TokoGem */}
       <section id="keunggulan" className="py-16 bg-[#090d16]/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">
-              Kenapa Memilih ZenTopUp?
+              Kenapa Memilih TokoGem?
             </h2>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
               Pengalaman Top Up Game Terbaik & Terpercaya

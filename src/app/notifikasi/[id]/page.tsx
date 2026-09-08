@@ -29,11 +29,11 @@ export default function DetailNotifikasiPage({ params }: PageProps) {
     id,
     type: 'order_success' as const,
     title: 'Top Up Sukses & Item Masuk',
-    message: 'Transaksi kamu telah berhasil diverifikasi oleh sistem otomatis ZenTopUp. Item top up telah dikirimkan langsung ke akun game kamu.',
+    message: 'Transaksi kamu telah berhasil diverifikasi oleh sistem otomatis TokoGem. Item top up telah dikirimkan langsung ke akun game kamu.',
     createdAt: 'Baru saja',
     isRead: true,
-    orderId: 'ZEN-928174',
-    linkHref: '/riwayat/ZEN-928174',
+    orderId: 'GEM-928174',
+    linkHref: '/riwayat/GEM-928174',
     linkText: 'Lihat Invoice Transaksi',
   };
 
@@ -193,7 +193,7 @@ export default function DetailNotifikasiPage({ params }: PageProps) {
 
           <div className="text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5 pt-2">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Pemberitahuan resmi dari sistem otomatis ZenTopUp</span>
+            <span>Pemberitahuan resmi dari sistem otomatis TokoGem</span>
           </div>
 
         </div>

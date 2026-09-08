@@ -167,7 +167,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         {/* Footer tip */}
         <div className="px-4 py-2 bg-[#090d16] border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
           <span>Gunakan panah untuk navigasi &amp; Enter untuk memilih</span>
-          <span>ZenTopUp Search</span>
+          <span>TokoGem Search</span>
         </div>
       </div>
     </div>

@@ -71,7 +71,7 @@ export default function PlayerIdForm({
       setIsValidating(true);
       const timer = setTimeout(() => {
         setIsValidating(false);
-        setNickname(`ZenGamer_${userId.slice(-4)}`);
+        setNickname(`GemGamer_${userId.slice(-4)}`);
       }, 400);
       return () => clearTimeout(timer);
     } else {
@@ -225,7 +225,7 @@ export default function PlayerIdForm({
                 3. User ID &amp; Server ID terletak di bawah avatar atau nickname akun kamu (contoh: <code>12345678 (2024)</code>).
               </p>
               <p>
-                4. Salin nomor tersebut dan tempelkan ke form isian di ZenTopUp.
+                4. Salin nomor tersebut dan tempelkan ke form isian di TokoGem.
               </p>
             </div>
 

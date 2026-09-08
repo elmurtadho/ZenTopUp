@@ -93,7 +93,7 @@ export default function MasukPage() {
               <Zap className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-2xl font-extrabold text-white">
-              Masuk ke ZenTopUp
+              Masuk ke TokoGem
             </h1>
             <p className="text-xs text-slate-400">
               Akses riwayat transaksi instan dan voucher diskon khusus member
@@ -114,7 +114,7 @@ export default function MasukPage() {
               </div>
               <h3 className="text-base font-bold text-white">Login Berhasil!</h3>
               <p className="text-xs text-slate-300">
-                Selamat datang kembali di ZenTopUp. Mengalihkan...
+                Selamat datang kembali di TokoGem. Mengalihkan...
               </p>
             </div>
           ) : (

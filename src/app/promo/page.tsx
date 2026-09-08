@@ -48,7 +48,7 @@ export default function PromoListPage() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
-            Pusat Promo &amp; Voucher ZenTopUp
+            Pusat Promo &amp; Voucher TokoGem
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto mb-6">
             Hemat lebih banyak dengan voucher diskon langsung dan cashback setiap kali top up game favorit kamu.
@@ -200,7 +200,7 @@ export default function PromoListPage() {
               <HelpCircle className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Cara Memakai Kode Promo di ZenTopUp</h2>
+              <h2 className="text-xl font-bold text-white">Cara Memakai Kode Promo di TokoGem</h2>
               <p className="text-xs text-slate-400">Ikuti panduan mudah ini untuk menikmati diskon instan</p>
             </div>
           </div>

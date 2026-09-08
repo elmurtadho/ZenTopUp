@@ -111,7 +111,7 @@ export async function seedDatabase() {
       console.log('Seeding initial demo orders...');
       const demoOrders = [
         {
-          id: 'ZEN-928174',
+          id: 'GEM-928174',
           gameId: 1,
           itemId: 1,
           gameUserId: '128492019',
@@ -127,7 +127,7 @@ export async function seedDatabase() {
           status: 'berhasil',
         },
         {
-          id: 'ZEN-847291',
+          id: 'GEM-847291',
           gameId: 2,
           itemId: 6,
           gameUserId: 'ShadowBlade#IDN',
@@ -143,7 +143,7 @@ export async function seedDatabase() {
           status: 'pending',
         },
         {
-          id: 'ZEN-761928',
+          id: 'GEM-761928',
           gameId: 3,
           itemId: 11,
           gameUserId: '987654321',
@@ -159,7 +159,7 @@ export async function seedDatabase() {
           status: 'berhasil',
         },
         {
-          id: 'ZEN-618290',
+          id: 'GEM-618290',
           gameId: 4,
           itemId: 15,
           gameUserId: '812938475',
@@ -170,12 +170,12 @@ export async function seedDatabase() {
           discountAmount: 10000,
           adminFee: 0,
           totalAmount: 55000,
-          promoCode: 'ZENDISKON10',
+          promoCode: 'GEMDISKON10',
           paymentMethod: 'DANA',
           status: 'berhasil',
         },
         {
-          id: 'ZEN-559281',
+          id: 'GEM-559281',
           gameId: 5,
           itemId: 18,
           gameUserId: '519283741',
@@ -191,7 +191,7 @@ export async function seedDatabase() {
           status: 'pending',
         },
         {
-          id: 'ZEN-448102',
+          id: 'GEM-448102',
           gameId: 1,
           itemId: 3,
           gameUserId: '128492019',
@@ -227,20 +227,20 @@ export async function seedDatabase() {
       console.log('Seeding initial notifications...');
       const demoNotifs = [
         {
-          orderId: 'ZEN-928174',
+          orderId: 'GEM-928174',
           type: 'order_success',
           title: 'Top Up Sukses — 86 Diamond MLBB',
           message: 'Pembayaran QRIS berhasil diverifikasi. 86 Diamond telah dikirimkan ke ID 128492019 (2648).',
-          linkHref: '/riwayat/ZEN-928174',
+          linkHref: '/riwayat/GEM-928174',
           linkText: 'Lihat Invoice',
           isRead: false,
         },
         {
-          orderId: 'ZEN-847291',
+          orderId: 'GEM-847291',
           type: 'order_created',
           title: 'Menunggu Pembayaran — 625 Valorant Points',
           message: 'Selesaikan transfer BCA Virtual Account sebelum batas waktu berakhir.',
-          linkHref: '/pembayaran/ZEN-847291',
+          linkHref: '/pembayaran/GEM-847291',
           linkText: 'Bayar Sekarang',
           isRead: false,
         },

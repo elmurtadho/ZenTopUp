@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         if (defaultUser) {
           return NextResponse.json({
             success: true,
-            message: 'Login berhasil (Sesi Akun ZenTopUp)',
+            message: 'Login berhasil (Sesi Akun TokoGem)',
             data: {
               user: {
                 id: defaultUser.id,
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
                 memberLevel: defaultUser.memberLevel,
                 role: defaultUser.role,
               },
-              token: `zen_jwt_${defaultUser.id}_${Date.now()}`,
+              token: `tokogem_jwt_${defaultUser.id}_${Date.now()}`,
             },
           });
         }
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
           memberLevel: user.memberLevel,
           role: user.role,
         },
-        token: `zen_jwt_${user.id}_${Date.now()}`,
+        token: `tokogem_jwt_${user.id}_${Date.now()}`,
       },
     });
   } catch (error) {

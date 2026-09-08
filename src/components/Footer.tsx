@@ -16,7 +16,7 @@ export default function Footer() {
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="font-extrabold text-xl tracking-tight text-white">
-                Zen<span className="text-blue-400">TopUp</span>
+                Toko<span className="text-blue-400">Gem</span>
               </span>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -78,7 +78,7 @@ export default function Footer() {
                 <span className="text-slate-400">WhatsApp: 0812-3456-7890</span>
               </li>
               <li>
-                <span className="text-slate-400">Email: support@zentopup.id</span>
+                <span className="text-slate-400">Email: support@tokogem.id</span>
               </li>
               <li>
                 <span className="text-slate-400">Operasional: 24 Jam Non-Stop</span>
@@ -109,7 +109,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
-            &copy; {new Date().getFullYear()} ZenTopUp. Seluruh hak cipta dilindungi.
+            &copy; {new Date().getFullYear()} TokoGem. Seluruh hak cipta dilindungi.
           </div>
           <div className="flex items-center gap-1">
             <span>Dibuat dengan</span>

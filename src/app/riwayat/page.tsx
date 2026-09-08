@@ -120,7 +120,7 @@ function RiwayatContent() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari Nomor Pesanan (mis: ZEN-847291) atau No. WhatsApp..."
+                placeholder="Cari Nomor Pesanan (mis: GEM-847291) atau No. WhatsApp..."
                 className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 focus:border-blue-500 text-white text-sm outline-none transition"
               />
               {searchQuery && (
@@ -225,7 +225,7 @@ function RiwayatContent() {
             description={
               hasActiveFilters
                 ? `Tidak ditemukan transaksi yang cocok dengan kriteria pencarian dan filter yang kamu pilih.`
-                : 'Kamu belum pernah melakukan transaksi top up di ZenTopUp. Pilih game favorit kamu dan nikmati proses top up instan dalam hitungan detik!'
+                : 'Kamu belum pernah melakukan transaksi top up di TokoGem. Pilih game favorit kamu dan nikmati proses top up instan dalam hitungan detik!'
             }
             actionText="Mulai Top Up Game"
             actionHref="/#katalog"
@@ -241,7 +241,7 @@ function RiwayatContent() {
               <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-400" />
-                  <h3 className="font-bold text-white text-base">Invoice Resmi ZenTopUp</h3>
+                  <h3 className="font-bold text-white text-base">Invoice Resmi TokoGem</h3>
                 </div>
                 <button
                   onClick={() => setSelectedTx(null)}

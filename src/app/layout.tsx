@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'ZenTopUp — Platform Top Up Game Cepat, Termurah & Resmi',
+  title: 'TokoGem — Platform Top Up Game Cepat, Termurah & Resmi',
   description:
     'Top up diamond MLBB, Free Fire, PUBG Mobile, Valorant VP, Genshin Impact Genesis Crystal instan 1 detik, aman dan resmi 24 jam.',
   keywords: [
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     'diamond ff',
     'uc pubg',
     'valorant points',
-    'zentopup',
+    'tokogem',
     'topup resmi indonesia',
   ],
 };

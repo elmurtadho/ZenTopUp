@@ -166,7 +166,7 @@ export default function GameDetailPage({ params }: PageProps) {
     setTimeout(() => {
       setIsProcessing(false);
       setShowSummaryModal(false);
-      const mockOrderId = 'ZEN-' + Math.floor(100000 + Math.random() * 900000);
+      const mockOrderId = 'GEM-' + Math.floor(100000 + Math.random() * 900000);
       router.push(`/pembayaran/${mockOrderId}`);
     }, 1000);
   };

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           totalOrders: userOrders.length,
           totalCompleted: userOrders.filter((o) => o.status === 'berhasil').length,
           totalSpent,
-          zenPoints: 12500,
+          gemPoints: 12500,
           activeVouchers: 3,
         },
         createdAt: user.createdAt,

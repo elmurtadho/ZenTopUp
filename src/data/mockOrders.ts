@@ -16,7 +16,7 @@ export interface MockTransaction {
 
 export const MOCK_TRANSACTIONS: MockTransaction[] = [
   {
-    id: 'ZEN-928174',
+    id: 'GEM-928174',
     gameName: 'Mobile Legends: Bang Bang',
     gameSlug: 'mobile-legends',
     gameIcon: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=150&auto=format&fit=crop&q=80',
@@ -30,7 +30,7 @@ export const MOCK_TRANSACTIONS: MockTransaction[] = [
     createdAt: '2026-08-14 19:30:12',
   },
   {
-    id: 'ZEN-847291',
+    id: 'GEM-847291',
     gameName: 'Valorant',
     gameSlug: 'valorant',
     gameIcon: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=150&auto=format&fit=crop&q=80',
@@ -44,7 +44,7 @@ export const MOCK_TRANSACTIONS: MockTransaction[] = [
     vaNumber: '880184729177777777',
   },
   {
-    id: 'ZEN-761928',
+    id: 'GEM-761928',
     gameName: 'Free Fire',
     gameSlug: 'free-fire',
     gameIcon: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=150&auto=format&fit=crop&q=80',
@@ -57,7 +57,7 @@ export const MOCK_TRANSACTIONS: MockTransaction[] = [
     createdAt: '2026-08-13 14:22:05',
   },
   {
-    id: 'ZEN-618294',
+    id: 'GEM-618294',
     gameName: 'Genshin Impact',
     gameSlug: 'genshin-impact',
     gameIcon: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=150&auto=format&fit=crop&q=80',
@@ -71,7 +71,7 @@ export const MOCK_TRANSACTIONS: MockTransaction[] = [
     createdAt: '2026-08-12 11:05:30',
   },
   {
-    id: 'ZEN-519283',
+    id: 'GEM-519283',
     gameName: 'PUBG Mobile',
     gameSlug: 'pubg-mobile',
     gameIcon: 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=150&auto=format&fit=crop&q=80',

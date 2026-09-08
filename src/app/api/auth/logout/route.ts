@@ -4,11 +4,11 @@ export async function POST(request: NextRequest) {
   try {
     const response = NextResponse.json({
       success: true,
-      message: 'Berhasil keluar dari akun ZenTopUp',
+      message: 'Berhasil keluar dari akun TokoGem',
     });
 
     // Clear auth cookies
-    response.cookies.set('zen_token', '', {
+    response.cookies.set('tokogem_token', '', {
       httpOnly: true,
       expires: new Date(0),
       path: '/',

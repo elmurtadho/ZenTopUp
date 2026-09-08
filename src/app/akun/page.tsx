@@ -153,7 +153,7 @@ export default function ProfilPenggunaPage() {
             <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80">
               <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
                 <Coins className="w-3.5 h-3.5 text-amber-400" />
-                <span>ZenPoints Reward</span>
+                <span>GemPoints Reward</span>
               </div>
               <span className="text-lg sm:text-xl font-extrabold text-amber-400">
                 12.500 PTS

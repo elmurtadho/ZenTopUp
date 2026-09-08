@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check saved session in localStorage
     try {
-      const saved = localStorage.getItem('zentopup_user');
+      const saved = localStorage.getItem('tokogem_user') || localStorage.getItem('zentopup_user');
       if (saved) {
         setUser(JSON.parse(saved));
       } else {
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           totalTransactions: 14,
         };
         setUser(demoUser);
-        localStorage.setItem('zentopup_user', JSON.stringify(demoUser));
+        localStorage.setItem('tokogem_user', JSON.stringify(demoUser));
       }
     } catch {
       // Fallback
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (userData: Partial<UserProfile>) => {
     const newUser: UserProfile = {
       id: userData.id || Date.now(),
-      name: userData.name || 'Gamer ZenTopUp',
+      name: userData.name || 'Gamer TokoGem',
       email: userData.email || 'user@example.com',
       phone: userData.phone || '081234567890',
       avatar:
@@ -66,13 +66,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     setUser(newUser);
     try {
-      localStorage.setItem('zentopup_user', JSON.stringify(newUser));
+      localStorage.setItem('tokogem_user', JSON.stringify(newUser));
     } catch {}
   };
 
   const logout = () => {
     setUser(null);
     try {
+      localStorage.removeItem('tokogem_user');
       localStorage.removeItem('zentopup_user');
     } catch {}
   };
