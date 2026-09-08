@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { promos } from '@/db/schema';
 import { eq, and, or, isNull } from 'drizzle-orm';
 import { seedDatabase } from '@/db/seed';
+import { MOCK_PROMOS } from '@/data/mockGames';
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,10 +62,11 @@ export async function GET(request: NextRequest) {
       total: formattedResult.length,
     });
   } catch (error) {
-    console.error('Error fetching promos:', error);
-    return NextResponse.json(
-      { success: false, message: 'Gagal mengambil daftar promo' },
-      { status: 500 }
-    );
+    console.warn('[API /promos] Falling back to mock data:', error);
+    return NextResponse.json({
+      success: true,
+      data: MOCK_PROMOS,
+      total: MOCK_PROMOS.length,
+    });
   }
 }

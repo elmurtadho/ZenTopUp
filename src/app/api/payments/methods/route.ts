@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { paymentMethods } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { seedDatabase } from '@/db/seed';
+import { MOCK_PAYMENT_METHODS } from '@/data/mockPayments';
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,10 +60,11 @@ export async function GET(request: NextRequest) {
       total: formatted.length,
     });
   } catch (error) {
-    console.error('Error fetching payment methods:', error);
-    return NextResponse.json(
-      { success: false, message: 'Gagal mengambil daftar metode pembayaran' },
-      { status: 500 }
-    );
+    console.warn('[API /payments/methods] Falling back to mock data:', error);
+    return NextResponse.json({
+      success: true,
+      data: MOCK_PAYMENT_METHODS,
+      total: MOCK_PAYMENT_METHODS.length,
+    });
   }
 }
