@@ -24,12 +24,32 @@ export async function seedDatabase() {
       });
     }
 
-    // Check if games table already has data
-    const existingGames = await db.select().from(games);
-    if (existingGames.length === 0) {
-      console.log('Seeding initial games and items...');
+    // Sync games and items with authentic assets and real-world prices
+    console.log('Syncing games and items with authentic assets and real-world prices...');
+    for (const g of MOCK_GAMES) {
+      const existing = await db.select().from(games).where(eq(games.slug, g.slug));
+      let gameId: number;
 
-      for (const g of MOCK_GAMES) {
+      if (existing.length > 0) {
+        gameId = existing[0].id;
+        await db
+          .update(games)
+          .set({
+            name: g.name,
+            publisher: g.publisher,
+            category: g.category,
+            iconUrl: g.iconUrl,
+            bannerUrl: g.bannerUrl,
+            tagline: g.tagline || '',
+            isPopular: g.isPopular,
+            rating: g.rating || 4.8,
+            minPrice: g.minPrice,
+            serverRequired: g.serverRequired || false,
+            serverList: g.serverList ? JSON.stringify(g.serverList) : null,
+            isActive: g.isActive,
+          })
+          .where(eq(games.id, gameId));
+      } else {
         const inserted = await db
           .insert(games)
           .values({
@@ -48,11 +68,27 @@ export async function seedDatabase() {
             isActive: g.isActive,
           })
           .returning({ id: games.id });
+        gameId = inserted[0]?.id;
+      }
 
-        const gameId = inserted[0]?.id;
+      if (gameId && g.items && g.items.length > 0) {
+        const existingItems = await db.select().from(items).where(eq(items.gameId, gameId));
 
-        if (gameId && g.items && g.items.length > 0) {
-          for (const item of g.items) {
+        for (const item of g.items) {
+          const match = existingItems.find((ei) => ei.name === item.name);
+          if (match) {
+            await db
+              .update(items)
+              .set({
+                nominal: item.nominal,
+                price: item.price,
+                originalPrice: item.originalPrice || null,
+                currency: item.currency || 'IDR',
+                isPopular: item.isPopular || false,
+                isActive: item.isActive,
+              })
+              .where(eq(items.id, match.id));
+          } else {
             await db.insert(items).values({
               gameId: gameId,
               name: item.name,
@@ -66,8 +102,30 @@ export async function seedDatabase() {
           }
         }
       }
+    }
 
-      for (const p of MOCK_PROMOS) {
+    // Sync promos
+    for (const p of MOCK_PROMOS) {
+      const existingPromo = await db.select().from(promos).where(eq(promos.code, p.code));
+      if (existingPromo.length > 0) {
+        await db
+          .update(promos)
+          .set({
+            title: p.title,
+            description: p.description,
+            discountType: p.discountType,
+            amount: p.amount,
+            minPurchase: p.minPurchase,
+            maxDiscount: p.maxDiscount || null,
+            imageUrl: p.imageUrl,
+            gameSlug: p.gameSlug || null,
+            startsAt: p.startsAt,
+            endsAt: p.endsAt,
+            terms: JSON.stringify(p.terms),
+            isActive: p.isActive,
+          })
+          .where(eq(promos.id, existingPromo[0].id));
+      } else {
         await db.insert(promos).values({
           code: p.code,
           title: p.title,

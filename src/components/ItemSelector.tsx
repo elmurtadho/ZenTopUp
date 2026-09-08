@@ -10,6 +10,35 @@ interface ItemSelectorProps {
   onSelectItem: (item: GameItem) => void;
 }
 
+function getItemBadge(name: string) {
+  const lower = name.toLowerCase();
+  if (lower.includes('pass') || lower.includes('membership') || lower.includes('card') || lower.includes('welkin')) {
+    return { label: 'Pass / Langganan', color: 'text-amber-400', icon: '🎫' };
+  }
+  if (lower.includes('diamond')) {
+    return { label: 'Diamond Resmi', color: 'text-cyan-400', icon: '💎' };
+  }
+  if (lower.includes('uc')) {
+    return { label: 'UC Resmi', color: 'text-yellow-400', icon: '🪙' };
+  }
+  if (lower.includes('vp')) {
+    return { label: 'Valorant Points', color: 'text-rose-400', icon: '⚡' };
+  }
+  if (lower.includes('crystal')) {
+    return { label: 'Genesis Crystal', color: 'text-indigo-300', icon: '✨' };
+  }
+  if (lower.includes('token')) {
+    return { label: 'Token Resmi', color: 'text-amber-300', icon: '🪙' };
+  }
+  if (lower.includes('robux')) {
+    return { label: 'Robux Resmi', color: 'text-emerald-400', icon: '💠' };
+  }
+  if (lower.includes('fc point') || lower.includes('silver')) {
+    return { label: 'FC Points Resmi', color: 'text-green-400', icon: '⚽' };
+  }
+  return { label: 'Item Resmi', color: 'text-blue-400', icon: '💎' };
+}
+
 export default function ItemSelector({
   items,
   selectedItem,
@@ -19,12 +48,12 @@ export default function ItemSelector({
 
   const filteredItems = items.filter((item) => {
     if (activeTab === 'populer') return item.isPopular;
-    if (activeTab === 'pass') return item.name.toLowerCase().includes('pass') || item.name.toLowerCase().includes('membership');
+    if (activeTab === 'pass') return item.name.toLowerCase().includes('pass') || item.name.toLowerCase().includes('membership') || item.name.toLowerCase().includes('card') || item.name.toLowerCase().includes('welkin');
     return true;
   });
 
   const hasPasses = items.some(
-    (i) => i.name.toLowerCase().includes('pass') || i.name.toLowerCase().includes('membership')
+    (i) => i.name.toLowerCase().includes('pass') || i.name.toLowerCase().includes('membership') || i.name.toLowerCase().includes('card') || i.name.toLowerCase().includes('welkin')
   );
 
   return (
@@ -78,6 +107,7 @@ export default function ItemSelector({
             item.originalPrice && item.originalPrice > item.price
               ? Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)
               : null;
+          const badge = getItemBadge(item.name);
 
           return (
             <button
@@ -104,10 +134,10 @@ export default function ItemSelector({
               )}
 
               <div className="mb-3">
-                <div className="flex items-center gap-1.5 text-blue-400 text-xs mb-1">
-                  <Gem className="w-3.5 h-3.5" />
-                  <span className="font-semibold text-slate-300 group-hover:text-white transition">
-                    Item Resmi
+                <div className="flex items-center gap-1.5 text-xs mb-1.5">
+                  <span className="text-xs leading-none">{badge.icon}</span>
+                  <span className={`font-semibold transition ${badge.color}`}>
+                    {badge.label}
                   </span>
                 </div>
                 <span className="font-bold text-sm text-white block leading-snug">
