@@ -89,6 +89,10 @@ export default function Navbar() {
     },
   ];
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <>
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#0b0f19]/85 border-b border-slate-800/80 shadow-lg shadow-black/20">
