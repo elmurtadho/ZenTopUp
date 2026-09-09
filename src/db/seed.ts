@@ -4,10 +4,31 @@ import { MOCK_GAMES, MOCK_PROMOS } from '../data/mockGames';
 import { MOCK_PAYMENT_METHODS } from '../data/mockPayments';
 import { eq } from 'drizzle-orm';
 
-export async function seedDatabase() {
-  await initDatabase();
+let dbSeeded = false;
+let isSeeding = false;
 
+export async function seedDatabase(force = false) {
+  if (dbSeeded && !force) return;
+  if (isSeeding && !force) {
+    while (isSeeding) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return;
+  }
+
+  isSeeding = true;
   try {
+    await initDatabase();
+
+    // Fast-path: If games already exist in DB and not force, mark seeded and return immediately
+    if (!force) {
+      const existingGames = await db.select({ id: games.id }).from(games).limit(1);
+      if (existingGames.length > 0) {
+        dbSeeded = true;
+        return;
+      }
+    }
+
     // Check if users table already has data
     const existingUsers = await db.select().from(users);
     if (existingUsers.length === 0) {
@@ -383,8 +404,11 @@ export async function seedDatabase() {
     }
 
     console.log('Database verification and seed check completed.');
+    dbSeeded = true;
   } catch (err) {
     console.error('Error during database seed:', err);
+  } finally {
+    isSeeding = false;
   }
 }
 

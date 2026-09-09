@@ -20,8 +20,11 @@ export const client = createClient({
 
 export const db = drizzle(client, { schema });
 
+let dbInitialized = false;
+
 // Auto initialize tables if not exist
 export async function initDatabase() {
+  if (dbInitialized) return;
   try {
     await client.executeMultiple(`
       CREATE TABLE IF NOT EXISTS games (
@@ -186,6 +189,7 @@ export async function initDatabase() {
     } catch {
       // Column already exists, ignore
     }
+    dbInitialized = true;
   } catch (err) {
     console.warn('[DB] Warning during table init:', err);
   }
