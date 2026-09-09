@@ -17,16 +17,24 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   XCircle,
+  Clock,
+  ChevronRight,
+  Check,
+  X,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import ExportExcelModal from '@/components/admin/ExportExcelModal';
 
 export default function AdminAccountingPage() {
   const [data, setData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [period, setPeriod] = useState<'all' | 'today' | '7days' | 'month' | 'custom'>('all');
+  const [period, setPeriod] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [activeTab, setActiveTab] = useState<'games' | 'payments' | 'ledger'>('games');
+
+  // Export Modal state
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Toast / Feedback
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -40,10 +48,8 @@ export default function AdminAccountingPage() {
     try {
       setIsLoading(true);
       let url = `/api/admin/accounting?period=${period}`;
-      if (period === 'custom' && startDate) {
-        url += `&startDate=${startDate}`;
-        if (endDate) url += `&endDate=${endDate}`;
-      }
+      if (startDate) url += `&startDate=${startDate}`;
+      if (endDate) url += `&endDate=${endDate}`;
 
       const res = await fetch(url);
       const json = await res.json();
@@ -63,20 +69,39 @@ export default function AdminAccountingPage() {
 
   const handleCustomDateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setPeriod('custom');
     fetchAccounting();
   };
 
-  // Export to Excel (.xlsx) using SheetJS
-  const handleExportExcel = () => {
+  const handleClearDateFilter = () => {
+    setStartDate('');
+    setEndDate('');
+    setPeriod('all');
+  };
+
+  const handleApplyPreset = (p: string) => {
+    setPeriod(p);
+    setStartDate('');
+    setEndDate('');
+  };
+
+  const handleApplySpecificRange = (start: string, end: string) => {
+    setStartDate(start);
+    setEndDate(end);
+    setPeriod('custom');
+  };
+
+  // Quick Export current view
+  const handleExportCurrentExcel = () => {
     if (!data || !data.ledger || data.ledger.length === 0) {
       showToast('error', 'Tidak ada data transaksi untuk diexport.');
       return;
     }
 
     try {
-      // 1. Prepare Summary Sheet
       const summaryRows = [
-        { Parameter: 'Periode Laporan', Nilai: period },
+        { Parameter: 'Nama Toko', Nilai: 'TokoGem Official Store' },
+        { Parameter: 'Periode Laporan', Nilai: data.periodLabel || 'Semua Waktu' },
         { Parameter: 'Tanggal Cetak', Nilai: new Date().toLocaleString('id-ID') },
         { Parameter: 'Total Transaksi Masuk', Nilai: data.summary.totalOrders },
         { Parameter: 'Transaksi Berhasil', Nilai: data.summary.successCount },
@@ -88,7 +113,6 @@ export default function AdminAccountingPage() {
         { Parameter: 'Total Biaya Admin/Layanan (Rp)', Nilai: data.summary.totalAdminFees },
       ];
 
-      // 2. Prepare Ledger Sheet
       const ledgerRows = data.ledger.map((row: any, idx: number) => ({
         No: idx + 1,
         'ID Pesanan': row.orderId,
@@ -96,19 +120,18 @@ export default function AdminAccountingPage() {
         Game: row.gameName,
         'Item Nominal': row.itemName,
         'User ID Pemain': row.gameUserId,
-        'Zone / Server': row.serverId,
+        'Server': row.serverId || '-',
         'WhatsApp Pembeli': row.whatsapp,
         'Metode Bayar': row.paymentMethod,
         'Status Pesanan': row.status,
         'Harga Item (Rp)': row.itemPrice,
         'Diskon (Rp)': row.discountAmount,
         'Biaya Admin (Rp)': row.adminFee,
-        'Total Bayar Omset (Rp)': row.totalAmount,
+        'Total Omset Bayar (Rp)': row.totalAmount,
         'Modal HPP (Rp)': row.cogs,
         'Laba Bersih (Rp)': row.profit,
       }));
 
-      // 3. Prepare Game Performance Sheet
       const gameRows = (data.gameBreakdown || []).map((g: any) => ({
         'Nama Game': g.name,
         'Jumlah Pesanan': g.count,
@@ -119,7 +142,6 @@ export default function AdminAccountingPage() {
       }));
 
       const wb = XLSX.utils.book_new();
-
       const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
       const wsLedger = XLSX.utils.json_to_sheet(ledgerRows);
       const wsGames = XLSX.utils.json_to_sheet(gameRows);
@@ -170,7 +192,7 @@ export default function AdminAccountingPage() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
             <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
@@ -183,7 +205,7 @@ export default function AdminAccountingPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center flex-wrap gap-2.5">
           <button
             onClick={fetchAccounting}
             title="Refresh Data"
@@ -191,64 +213,125 @@ export default function AdminAccountingPage() {
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
+
+          {/* Dedicated Rekap Excel Modal Button */}
           <button
-            onClick={handleExportExcel}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 transition flex items-center gap-2 cursor-pointer"
+            onClick={() => setIsExportModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 transition flex items-center gap-2 cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
-            <span>Rekap ke Excel (.xlsx)</span>
+            <span>Rekap by Excel (Pilih Tanggal)</span>
           </button>
         </div>
       </div>
 
-      {/* Date Filter Bar */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          {[
-            { key: 'all', label: 'Semua Waktu' },
-            { key: 'today', label: 'Hari Ini' },
-            { key: '7days', label: '7 Hari Terakhir' },
-            { key: 'month', label: 'Bulan Ini' },
-            { key: 'custom', label: 'Pilih Tanggal' },
-          ].map((btn) => (
-            <button
-              key={btn.key}
-              onClick={() => setPeriod(btn.key as any)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
-                period === btn.key
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                  : 'bg-slate-950/60 text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700'
-              }`}
-            >
-              {btn.label}
-            </button>
-          ))}
+      {/* Comprehensive Date Filter Bar */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
+        {/* Preset Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            {[
+              { key: 'all', label: 'Semua Waktu' },
+              { key: 'today', label: 'Hari Ini' },
+              { key: 'yesterday', label: 'Kemarin' },
+              { key: '7days', label: '7 Hari Terakhir' },
+              { key: 'month', label: 'Bulan Ini' },
+              { key: 'last_month', label: 'Bulan Lalu' },
+              { key: 'this_year', label: 'Tahun Ini' },
+            ].map((btn) => (
+              <button
+                key={btn.key}
+                onClick={() => handleApplyPreset(btn.key)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                  period === btn.key && !startDate && !endDate
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    : 'bg-slate-950/60 text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700'
+                }`}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
+
+          {/* User Example Shortcut */}
+          <button
+            onClick={() => handleApplySpecificRange('2026-02-01', '2026-03-01')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+              startDate === '2026-02-01' && endDate === '2026-03-01'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                : 'bg-slate-950/60 text-amber-400/90 border border-amber-500/30 hover:bg-slate-800'
+            }`}
+            title="Contoh: 1 Februari 2026 - 1 Maret 2026"
+          >
+            <span>⭐ 1 Feb - 1 Mar 2026</span>
+          </button>
         </div>
 
-        {period === 'custom' && (
-          <form onSubmit={handleCustomDateSubmit} className="flex items-center gap-2 text-xs">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-500"
-              required
-            />
-            <span className="text-slate-500">s/d</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-500"
-            />
+        {/* Custom Date Picker Inputs Form */}
+        <form
+          onSubmit={handleCustomDateSubmit}
+          className="pt-3 border-t border-slate-800/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3"
+        >
+          <div className="flex flex-wrap items-center gap-2.5 text-xs">
+            <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Filter Tanggal:</span>
+            </span>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 focus-within:border-emerald-500">
+                <span className="text-[11px] text-slate-400">Dari:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="bg-transparent text-white outline-none font-mono text-xs cursor-pointer"
+                />
+              </div>
+
+              <span className="text-slate-500 font-bold">-</span>
+
+              <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 focus-within:border-emerald-500">
+                <span className="text-[11px] text-slate-400">Sampai:</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="bg-transparent text-white outline-none font-mono text-xs cursor-pointer"
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
-              Filter
+              <Check className="w-3.5 h-3.5" />
+              <span>Terapkan Tanggal</span>
             </button>
-          </form>
-        )}
+
+            {(startDate || endDate || period !== 'all') && (
+              <button
+                type="button"
+                onClick={handleClearDateFilter}
+                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition flex items-center gap-1 cursor-pointer"
+                title="Reset Filter"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
+
+          {/* Active Period Feedback Label */}
+          <div className="p-2.5 px-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-2 shrink-0">
+            <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="text-slate-400 text-xs">Periode Aktif:</span>
+            <span className="font-bold text-white text-xs font-mono">
+              {data?.periodLabel || 'Semua Waktu'}
+            </span>
+          </div>
+        </form>
       </div>
 
       {/* Financial KPI Metrics Grid */}
@@ -322,41 +405,52 @@ export default function AdminAccountingPage() {
       {/* Breakdown Tabs & Tables */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 p-2 sm:p-3 border-b border-slate-800 bg-slate-950/60">
-          <button
-            onClick={() => setActiveTab('games')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-              activeTab === 'games'
-                ? 'bg-blue-600/20 text-cyan-300 border border-blue-500/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Gamepad2 className="w-3.5 h-3.5" />
-            <span>Performa per Game ({data?.gameBreakdown?.length || 0})</span>
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-2 p-3 border-b border-slate-800 bg-slate-950/60">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setActiveTab('games')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                activeTab === 'games'
+                  ? 'bg-blue-600/20 text-cyan-300 border border-blue-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Gamepad2 className="w-3.5 h-3.5" />
+              <span>Performa per Game ({data?.gameBreakdown?.length || 0})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                activeTab === 'payments'
+                  ? 'bg-blue-600/20 text-cyan-300 border border-blue-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>Channel Pembayaran ({data?.paymentBreakdown?.length || 0})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('ledger')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                activeTab === 'ledger'
+                  ? 'bg-blue-600/20 text-cyan-300 border border-blue-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Buku Kas Transaksi ({data?.ledger?.length || 0})</span>
+            </button>
+          </div>
 
           <button
-            onClick={() => setActiveTab('payments')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-              activeTab === 'payments'
-                ? 'bg-blue-600/20 text-cyan-300 border border-blue-500/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            onClick={handleExportCurrentExcel}
+            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+            title="Download view saat ini ke Excel"
           >
-            <CreditCard className="w-3.5 h-3.5" />
-            <span>Channel Pembayaran ({data?.paymentBreakdown?.length || 0})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('ledger')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-              activeTab === 'ledger'
-                ? 'bg-blue-600/20 text-cyan-300 border border-blue-500/30'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Buku Kas Transaksi ({data?.ledger?.length || 0})</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>Download Tampilan Ini (.xlsx)</span>
           </button>
         </div>
 
@@ -500,6 +594,15 @@ export default function AdminAccountingPage() {
           </div>
         )}
       </div>
+
+      {/* Export Excel by Date Modal */}
+      <ExportExcelModal
+        isOpen={isExportModalOpen}
+        defaultStartDate={startDate}
+        defaultEndDate={endDate}
+        onClose={() => setIsExportModalOpen(false)}
+        showToast={showToast}
+      />
     </div>
   );
 }

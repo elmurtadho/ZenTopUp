@@ -43,31 +43,97 @@ export async function GET(request: NextRequest) {
     // Filter by date
     const now = new Date();
     let filteredOrders = allOrders;
+    let periodLabel = 'Semua Waktu';
 
-    if (period === 'today') {
-      const todayStr = now.toISOString().split('T')[0];
-      filteredOrders = allOrders.filter(
-        (o) => o.createdAt && o.createdAt.startsWith(todayStr)
-      );
-    } else if (period === '7days') {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(now.getDate() - 7);
-      filteredOrders = allOrders.filter(
-        (o) => o.createdAt && new Date(o.createdAt) >= sevenDaysAgo
-      );
-    } else if (period === 'month') {
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      filteredOrders = allOrders.filter(
-        (o) => o.createdAt && new Date(o.createdAt) >= firstDayOfMonth
-      );
-    } else if (period === 'custom' && startDate) {
-      const start = new Date(startDate);
-      const end = endDate ? new Date(endDate + 'T23:59:59') : now;
+    const parseOrderDate = (dateStr: string | null) => {
+      if (!dateStr) return null;
+      // Handle both SQLite CURRENT_TIMESTAMP "YYYY-MM-DD HH:MM:SS" and ISO "YYYY-MM-DDTHH:MM:SS"
+      const normalized = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+      const d = new Date(normalized);
+      return isNaN(d.getTime()) ? new Date(dateStr) : d;
+    };
+
+    const formatDateIndo = (date: Date) => {
+      return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    };
+
+    if (startDate || endDate) {
+      const start = startDate ? new Date(startDate + 'T00:00:00') : new Date('2020-01-01');
+      const end = endDate ? new Date(endDate + 'T23:59:59.999') : new Date();
+
       filteredOrders = allOrders.filter((o) => {
-        if (!o.createdAt) return false;
-        const d = new Date(o.createdAt);
+        const d = parseOrderDate(o.createdAt);
+        if (!d) return false;
         return d >= start && d <= end;
       });
+
+      if (startDate && endDate) {
+        periodLabel = `${formatDateIndo(start)} - ${formatDateIndo(end)}`;
+      } else if (startDate) {
+        periodLabel = `Mulai ${formatDateIndo(start)}`;
+      } else if (endDate) {
+        periodLabel = `Hingga ${formatDateIndo(end)}`;
+      }
+    } else if (period === 'today') {
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      filteredOrders = allOrders.filter((o) => {
+        const d = parseOrderDate(o.createdAt);
+        return d && d >= startOfDay && d <= endOfDay;
+      });
+      periodLabel = `Hari Ini (${formatDateIndo(now)})`;
+    } else if (period === 'yesterday') {
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      const startOfDay = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0);
+      const endOfDay = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
+      filteredOrders = allOrders.filter((o) => {
+        const d = parseOrderDate(o.createdAt);
+        return d && d >= startOfDay && d <= endOfDay;
+      });
+      periodLabel = `Kemarin (${formatDateIndo(yesterday)})`;
+    } else if (period === '7days') {
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 7);
+      filteredOrders = allOrders.filter((o) => {
+        const d = parseOrderDate(o.createdAt);
+        return d && d >= sevenDaysAgo && d <= now;
+      });
+      periodLabel = `7 Hari Terakhir (${formatDateIndo(sevenDaysAgo)} - ${formatDateIndo(now)})`;
+    } else if (period === '30days') {
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+      filteredOrders = allOrders.filter((o) => {
+        const d = parseOrderDate(o.createdAt);
+        return d && d >= thirtyDaysAgo && d <= now;
+      });
+      periodLabel = `30 Hari Terakhir (${formatDateIndo(thirtyDaysAgo)} - ${formatDateIndo(now)})`;
+    } else if (period === 'month') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      filteredOrders = allOrders.filter((o) => {
+        const d = parseOrderDate(o.createdAt);
+        return d && d >= firstDay && d <= now;
+      });
+      periodLabel = `Bulan Ini (${now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})`;
+    } else if (period === 'last_month') {
+      const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+      const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+      filteredOrders = allOrders.filter((o) => {
+        const d = parseOrderDate(o.createdAt);
+        return d && d >= firstDayLastMonth && d <= lastDayLastMonth;
+      });
+      periodLabel = `Bulan Lalu (${firstDayLastMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })})`;
+    } else if (period === 'this_year') {
+      const firstDayYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+      filteredOrders = allOrders.filter((o) => {
+        const d = parseOrderDate(o.createdAt);
+        return d && d >= firstDayYear && d <= now;
+      });
+      periodLabel = `Tahun Ini (${now.getFullYear()})`;
     }
 
     // Accounting Calculations
@@ -155,6 +221,9 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         period,
+        periodLabel,
+        startDate: startDate || null,
+        endDate: endDate || null,
         summary: {
           totalOrders: filteredOrders.length,
           successCount: successfulOrders.length,
