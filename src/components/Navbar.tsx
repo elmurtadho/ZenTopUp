@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
   Zap, 
@@ -97,8 +98,15 @@ export default function Navbar() {
             
             {/* 1. Brand Logo */}
             <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-md shadow-blue-500/25 group-hover:scale-105 transition-all duration-200">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                <Image
+                  src="/images/tokogem-logo.png"
+                  alt="TokoGem Logo"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(34,211,238,0.35)] group-hover:drop-shadow-[0_0_14px_rgba(34,211,238,0.6)] transition-all duration-200"
+                  priority
+                />
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-extrabold text-xl tracking-tight text-white">
