@@ -135,11 +135,11 @@ function RiwayatContent() {
             </div>
 
             {/* Game Selector Filter */}
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 sm:flex gap-2 w-full md:w-auto">
               <select
                 value={selectedGame}
                 onChange={(e) => setSelectedGame(e.target.value)}
-                className="px-4 py-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 focus:border-blue-500 text-white text-xs font-semibold outline-none cursor-pointer"
+                className="w-full sm:w-auto px-3 sm:px-4 py-3 sm:py-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 focus:border-blue-500 text-white text-xs font-semibold outline-none cursor-pointer truncate"
               >
                 <option value="semua">Semua Game</option>
                 {gameOptions.filter((g) => g !== 'semua').map((game) => (
@@ -153,7 +153,7 @@ function RiwayatContent() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-4 py-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 focus:border-blue-500 text-white text-xs font-semibold outline-none cursor-pointer"
+                className="w-full sm:w-auto px-3 sm:px-4 py-3 sm:py-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 focus:border-blue-500 text-white text-xs font-semibold outline-none cursor-pointer truncate"
               >
                 <option value="latest">Terbaru</option>
                 <option value="oldest">Terlama</option>
@@ -236,8 +236,8 @@ function RiwayatContent() {
 
         {/* Invoice Detail Modal */}
         {selectedTx && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-5 sm:space-y-6 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto my-auto">
               <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-400" />

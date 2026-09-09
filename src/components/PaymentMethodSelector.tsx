@@ -74,7 +74,7 @@ export default function PaymentMethodSelector({
 
             {/* Methods List */}
             {isExpanded && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-950/50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 sm:p-3 bg-slate-950/50">
                 {categoryMethods.map((method) => {
                   const isSelected = selectedMethod?.id === method.id;
                   const total = itemPrice + method.adminFee;
@@ -84,15 +84,15 @@ export default function PaymentMethodSelector({
                       key={method.id}
                       type="button"
                       onClick={() => onSelectMethod(method)}
-                      className={`p-3.5 rounded-xl border flex items-center justify-between text-left transition-all duration-200 cursor-pointer ${
+                      className={`p-2.5 sm:p-3.5 rounded-xl border flex items-center justify-between text-left transition-all duration-200 cursor-pointer ${
                         isSelected
                           ? 'bg-blue-600/15 border-blue-500 ring-2 ring-blue-500/30 shadow-md shadow-blue-600/10'
                           : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 hover:bg-slate-900'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
                         <div
-                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+                          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
                             isSelected
                               ? 'bg-blue-600/20 border-blue-500/50'
                               : 'bg-slate-800 border-slate-700'
@@ -102,11 +102,11 @@ export default function PaymentMethodSelector({
                             className={`w-4 h-4 ${isSelected ? 'text-blue-400' : 'text-slate-400'}`}
                           />
                         </div>
-                        <div className="min-w-0">
-                          <span className="font-bold text-sm text-white block truncate">
+                        <div className="min-w-0 flex-1 pr-1">
+                          <span className="font-bold text-xs sm:text-sm text-white block truncate">
                             {method.name}
                           </span>
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[10px] sm:text-[11px] text-slate-400">
                             {method.adminFee > 0
                               ? `+Rp ${method.adminFee.toLocaleString('id-ID')}`
                               : 'Gratis admin'}
@@ -114,19 +114,19 @@ export default function PaymentMethodSelector({
                         </div>
                       </div>
 
-                      <div className="text-right shrink-0 ml-2">
+                      <div className="text-right shrink-0 ml-1.5 sm:ml-2">
                         {isSelected ? (
                           <div className="flex flex-col items-end gap-0.5">
-                            <span className="text-xs font-bold text-white">
+                            <span className="text-[11px] sm:text-xs font-bold text-white whitespace-nowrap">
                               Rp {total.toLocaleString('id-ID')}
                             </span>
-                            <span className="text-[10px] text-blue-400 font-semibold flex items-center gap-0.5">
+                            <span className="text-[9px] sm:text-[10px] text-blue-400 font-semibold flex items-center gap-0.5">
                               <Check className="w-3 h-3" />
                               Dipilih
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs font-bold text-slate-400">
+                          <span className="text-[11px] sm:text-xs font-bold text-slate-400 whitespace-nowrap">
                             Rp {total.toLocaleString('id-ID')}
                           </span>
                         )}

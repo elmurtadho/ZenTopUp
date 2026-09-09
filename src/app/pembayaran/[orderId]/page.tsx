@@ -196,7 +196,7 @@ export default function PaymentPage({ params }: PageProps) {
                 </div>
 
                 {/* Total amount */}
-                <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <span className="text-xs text-slate-400 block">Total yang Harus Dibayar</span>
                     <span className="text-xl sm:text-2xl font-extrabold text-cyan-400">
@@ -205,7 +205,7 @@ export default function PaymentPage({ params }: PageProps) {
                   </div>
                   <button
                     onClick={() => handleCopy(totalAmount.toString(), 'amount')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs flex items-center gap-1.5 transition cursor-pointer"
+                    className="w-full sm:w-auto justify-center px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs flex items-center gap-1.5 transition cursor-pointer"
                   >
                     {isCopied === 'amount' ? (
                       <>
@@ -222,16 +222,16 @@ export default function PaymentPage({ params }: PageProps) {
                 </div>
 
                 {/* Virtual Account / Payment Code */}
-                <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <span className="text-xs text-slate-400 block">Nomor Kode / Virtual Account</span>
-                    <span className="text-base sm:text-lg font-mono font-bold text-white tracking-wider">
+                    <span className="text-base sm:text-lg font-mono font-bold text-white tracking-wider break-all">
                       {vaNumber}
                     </span>
                   </div>
                   <button
                     onClick={() => handleCopy(vaNumber, 'va')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs flex items-center gap-1.5 transition cursor-pointer"
+                    className="w-full sm:w-auto justify-center px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs flex items-center gap-1.5 transition cursor-pointer"
                   >
                     {isCopied === 'va' ? (
                       <>

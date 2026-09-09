@@ -172,11 +172,11 @@ export default function GameDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="py-6 sm:py-10">
+    <div className="py-6 sm:py-10 pb-28 lg:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-2 text-xs text-slate-400 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-400 mb-5 sm:mb-6">
           <Link href="/" className="hover:text-blue-400 transition flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Katalog Game</span>
@@ -186,17 +186,17 @@ export default function GameDetailPage({ params }: PageProps) {
         </div>
 
         {/* Top Game Hero Card */}
-        <div className="relative rounded-2xl md:rounded-3xl bg-[#111827] border border-slate-800 p-6 sm:p-8 mb-8 overflow-hidden">
+        <div className="relative rounded-2xl md:rounded-3xl bg-[#111827] border border-slate-800 p-5 sm:p-7 md:p-8 mb-6 sm:mb-8 overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[100px] rounded-full pointer-events-none" />
           
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 relative z-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 relative z-10">
             <img
               src={game.iconUrl || game.bannerUrl}
               alt={game.name}
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover shadow-xl border-2 border-slate-700/80 shrink-0"
+              className="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl object-cover shadow-xl border-2 border-slate-700/80 shrink-0"
             />
 
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
                   {game.category}
@@ -207,11 +207,11 @@ export default function GameDetailPage({ params }: PageProps) {
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white">
                 Top Up {game.name}
               </h1>
 
-              <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
                 {game.tagline || 'Proses kilat otomatis 1-5 detik masuk ke akun game kamu. Aman, bergaransi & harga termurah.'}
               </p>
             </div>
@@ -222,16 +222,16 @@ export default function GameDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Form Steps */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="lg:col-span-8 space-y-6 sm:space-y-8">
             
             {/* STEP 1: Akun Game */}
-            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-6 shadow-md">
+            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-4 sm:p-6 shadow-md">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center">
                   1
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-lg">Masukkan Data Akun</h3>
+                  <h3 className="font-bold text-white text-base sm:text-lg">Masukkan Data Akun</h3>
                   <p className="text-xs text-slate-400">Pastikan User ID sudah sesuai agar item langsung masuk</p>
                 </div>
               </div>
@@ -254,14 +254,14 @@ export default function GameDetailPage({ params }: PageProps) {
             </div>
 
             {/* STEP 2: Pilih Nominal */}
-            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-6 shadow-md">
+            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-4 sm:p-6 shadow-md">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center">
                     2
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-lg">Pilih Nominal Top Up</h3>
+                    <h3 className="font-bold text-white text-base sm:text-lg">Pilih Nominal Top Up</h3>
                     <p className="text-xs text-slate-400">Pilih item atau nominal yang ingin kamu beli</p>
                   </div>
                 </div>
@@ -287,13 +287,13 @@ export default function GameDetailPage({ params }: PageProps) {
             </div>
 
             {/* STEP 3: Metode Pembayaran */}
-            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-6 shadow-md">
+            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-4 sm:p-6 shadow-md">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center">
                   3
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-lg">Pilih Metode Pembayaran</h3>
+                  <h3 className="font-bold text-white text-base sm:text-lg">Pilih Metode Pembayaran</h3>
                   <p className="text-xs text-slate-400">Mendukung berbagai e-wallet, VA, dan transfer bank</p>
                 </div>
               </div>
@@ -317,13 +317,13 @@ export default function GameDetailPage({ params }: PageProps) {
             </div>
 
             {/* STEP 4: Promo Code & Kontak */}
-            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-6 shadow-md">
+            <div className="rounded-2xl bg-[#111827] border border-slate-800 p-4 sm:p-6 shadow-md">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center">
                   4
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-lg">Kode Promo &amp; Kontak</h3>
+                  <h3 className="font-bold text-white text-base sm:text-lg">Kode Promo &amp; Kontak</h3>
                   <p className="text-xs text-slate-400">Dapatkan diskon dan bukti transaksi instan</p>
                 </div>
               </div>
@@ -462,6 +462,32 @@ export default function GameDetailPage({ params }: PageProps) {
 
         </div>
 
+      </div>
+
+      {/* Floating Sticky Bottom Bar for Mobile & Tablet (< lg) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#0b0f19]/95 backdrop-blur-xl border-t border-slate-800 px-4 py-3 shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.5)]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-[11px] text-slate-400 block truncate">
+              {selectedItem ? selectedItem.name : 'Pilih item top up'}
+            </span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-[11px] text-slate-400">Total:</span>
+              <span className="text-base sm:text-lg font-extrabold text-cyan-400">
+                Rp {totalPrice.toLocaleString('id-ID')}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCheckout}
+            className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Beli Sekarang</span>
+          </button>
+        </div>
       </div>
 
       {/* Order Summary & Confirmation Modal */}

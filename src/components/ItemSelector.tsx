@@ -60,11 +60,11 @@ export default function ItemSelector({
     <div className="space-y-4">
       {/* Sub-tabs if game has pass/membership */}
       {hasPasses && (
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto scrollbar-none">
           <button
             type="button"
             onClick={() => setActiveTab('semua')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
               activeTab === 'semua'
                 ? 'bg-blue-600 text-white'
                 : 'bg-slate-900 text-slate-400 hover:text-white'
@@ -75,7 +75,7 @@ export default function ItemSelector({
           <button
             type="button"
             onClick={() => setActiveTab('populer')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1 transition ${
               activeTab === 'populer'
                 ? 'bg-blue-600 text-white'
                 : 'bg-slate-900 text-slate-400 hover:text-white'
@@ -87,7 +87,7 @@ export default function ItemSelector({
           <button
             type="button"
             onClick={() => setActiveTab('pass')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1 transition ${
               activeTab === 'pass'
                 ? 'bg-blue-600 text-white'
                 : 'bg-slate-900 text-slate-400 hover:text-white'
@@ -100,7 +100,7 @@ export default function ItemSelector({
       )}
 
       {/* Items Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
         {filteredItems.map((item) => {
           const isSelected = selectedItem?.id === item.id;
           const discountPercent =
@@ -114,7 +114,7 @@ export default function ItemSelector({
               key={item.id}
               type="button"
               onClick={() => onSelectItem(item)}
-              className={`relative p-4 rounded-xl text-left transition-all duration-200 flex flex-col justify-between border group cursor-pointer ${
+              className={`relative p-3 sm:p-4 rounded-xl text-left transition-all duration-200 flex flex-col justify-between border group cursor-pointer ${
                 isSelected
                   ? 'bg-blue-600/15 border-blue-500 ring-2 ring-blue-500/40 shadow-lg shadow-blue-500/10'
                   : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
