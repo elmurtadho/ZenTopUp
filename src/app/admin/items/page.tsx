@@ -13,9 +13,11 @@ import {
   RefreshCw,
   Flame,
   Gamepad2,
+  FileSpreadsheet,
 } from 'lucide-react';
 import ItemModal from '@/components/admin/ItemModal';
 import DeleteConfirmModal from '@/components/admin/DeleteConfirmModal';
+import ExcelImportModal from '@/components/admin/ExcelImportModal';
 
 function AdminItemsContent() {
   const searchParams = useSearchParams();
@@ -29,6 +31,7 @@ function AdminItemsContent() {
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
 
   // Delete states
@@ -176,6 +179,14 @@ function AdminItemsContent() {
             title="Refresh data"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-cyan-400' : ''}`} />
+          </button>
+
+          <button
+            onClick={() => setIsExcelModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 font-bold text-xs transition flex items-center gap-2 cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+            <span>Tambah via Excel</span>
           </button>
 
           <button
@@ -372,6 +383,16 @@ function AdminItemsContent() {
         isLoading={isDeleting}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteItem}
+      />
+
+      {/* Excel Bulk Import Modal */}
+      <ExcelImportModal
+        isOpen={isExcelModalOpen}
+        onClose={() => setIsExcelModalOpen(false)}
+        onSuccess={() => {
+          loadData();
+          showToast('success', 'Produk dari file Excel berhasil ditambahkan ke katalog!');
+        }}
       />
     </div>
   );

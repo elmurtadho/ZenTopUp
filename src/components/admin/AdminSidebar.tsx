@@ -15,6 +15,9 @@ import {
   ShieldAlert,
   ChevronRight,
   X,
+  Image as ImageIcon,
+  BellRing,
+  DollarSign,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -45,6 +48,18 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       color: 'text-cyan-400',
     },
     {
+      href: '/admin/banners',
+      label: 'Banner Event',
+      icon: ImageIcon,
+      color: 'text-violet-400',
+    },
+    {
+      href: '/admin/popup',
+      label: 'Popup Promo',
+      icon: BellRing,
+      color: 'text-pink-400',
+    },
+    {
       href: '/admin/promos',
       label: 'Promo & Kupon',
       icon: Tag,
@@ -61,6 +76,12 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       label: 'Pesanan & Transaksi',
       icon: ShoppingBag,
       color: 'text-rose-400',
+    },
+    {
+      href: '/admin/accounting',
+      label: 'Laporan Keuangan',
+      icon: DollarSign,
+      color: 'text-teal-400',
     },
   ];
 

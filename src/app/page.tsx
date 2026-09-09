@@ -1,12 +1,16 @@
 import HeroBanner from '@/components/HeroBanner';
 import GameCatalog from '@/components/GameCatalog';
 import PromoSection from '@/components/PromoSection';
+import WelcomePopup from '@/components/WelcomePopup';
 import { MOCK_GAMES } from '@/data/mockGames';
 import { ShieldCheck, Zap, CreditCard, Sparkles, RefreshCw, CheckCircle } from 'lucide-react';
 
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-2">
+      {/* Welcome Announcement Promo Popup */}
+      <WelcomePopup />
+
       {/* Hero Banner with Slides & Quick Info */}
       <HeroBanner />
 

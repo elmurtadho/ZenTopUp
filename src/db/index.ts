@@ -154,7 +154,38 @@ export async function initDatabase() {
         inapp_maintenance INTEGER NOT NULL DEFAULT 1,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS banners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        subtitle TEXT,
+        image_url TEXT NOT NULL,
+        target_url TEXT,
+        badge_text TEXT,
+        position INTEGER NOT NULL DEFAULT 0,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS web_popups (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        tag TEXT,
+        description TEXT NOT NULL,
+        image_url TEXT,
+        button_text TEXT,
+        button_url TEXT,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
     `);
+
+    // Safe migration: add cost_price column to items if not exists
+    try {
+      await client.execute('ALTER TABLE items ADD COLUMN cost_price INTEGER DEFAULT 0;');
+    } catch {
+      // Column already exists, ignore
+    }
   } catch (err) {
     console.warn('[DB] Warning during table init:', err);
   }

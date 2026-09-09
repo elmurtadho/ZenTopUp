@@ -1,5 +1,5 @@
 import { db, initDatabase } from './index';
-import { games, items, promos, paymentMethods, orders, payments, notifications, users } from './schema';
+import { games, items, promos, paymentMethods, orders, payments, notifications, users, banners, webPopups } from './schema';
 import { MOCK_GAMES, MOCK_PROMOS } from '../data/mockGames';
 import { MOCK_PAYMENT_METHODS } from '../data/mockPayments';
 import { eq } from 'drizzle-orm';
@@ -325,6 +325,61 @@ export async function seedDatabase() {
       for (const n of demoNotifs) {
         await db.insert(notifications).values(n);
       }
+    }
+
+    // Check if banners table has data
+    const existingBanners = await db.select().from(banners);
+    if (existingBanners.length === 0) {
+      console.log('Seeding initial event banners...');
+      const initialBanners = [
+        {
+          title: 'Diskon Kilat MLBB 30%',
+          subtitle: 'Top up Diamond Mobile Legends termurah se-Indonesia proses instan 1 detik',
+          imageUrl: '/images/games/mlbb-banner.webp',
+          targetUrl: '/game/mobile-legends',
+          badgeText: 'HOT PROMO',
+          position: 1,
+          isActive: true,
+        },
+        {
+          title: 'Valorant Night Market Hemat',
+          subtitle: 'Beli Valorant Points dapatkan diskon potongan langsung hingga Rp 50.000',
+          imageUrl: '/images/games/valo-banner.jpg',
+          targetUrl: '/game/valorant',
+          badgeText: 'DISCOUNT 15%',
+          position: 2,
+          isActive: true,
+        },
+        {
+          title: 'Free Fire Booyah Pass',
+          subtitle: 'Borong Diamond Free Fire murah meriah legal & aman 100% anti minus',
+          imageUrl: '/images/games/ff-banner.webp',
+          targetUrl: '/game/free-fire',
+          badgeText: 'FLASH SALE',
+          position: 3,
+          isActive: true,
+        },
+      ];
+
+      for (const b of initialBanners) {
+        await db.insert(banners).values(b);
+      }
+    }
+
+    // Check if web_popups table has data
+    const existingPopup = await db.select().from(webPopups);
+    if (existingPopup.length === 0) {
+      console.log('Seeding default welcome popup...');
+      await db.insert(webPopups).values({
+        title: '🎉 Promo Spesial Selamat Datang!',
+        tag: 'DISCOUNT MEMBER BARU',
+        description:
+          'Dapatkan potongan harga spesial pengguna baru hingga Rp 15.000 untuk semua game populer dengan kode voucher: TOKOGEMBARU. Proses instan kilat 1 detik!',
+        imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800',
+        buttonText: 'Ambil Voucher & Top Up Sekarang',
+        buttonUrl: '/promo',
+        isActive: true,
+      });
     }
 
     console.log('Database verification and seed check completed.');

@@ -30,6 +30,7 @@ export const items = sqliteTable('items', {
   nominal: integer('nominal').notNull(),
   price: integer('price').notNull(),
   originalPrice: integer('original_price'),
+  costPrice: integer('cost_price').default(0),
   currency: text('currency').default('IDR').notNull(),
   isPopular: integer('is_popular', { mode: 'boolean' }).default(false).notNull(),
   isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
@@ -146,6 +147,32 @@ export const notificationSettings = sqliteTable('notification_settings', {
   emailNewsletter: integer('email_newsletter', { mode: 'boolean' }).default(false).notNull(),
   inappOrderUpdate: integer('inapp_order_update', { mode: 'boolean' }).default(true).notNull(),
   inappMaintenance: integer('inapp_maintenance', { mode: 'boolean' }).default(true).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Banners table (Hero & Event banners)
+export const banners = sqliteTable('banners', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title').notNull(),
+  subtitle: text('subtitle'),
+  imageUrl: text('image_url').notNull(),
+  targetUrl: text('target_url'),
+  badgeText: text('badge_text'),
+  position: integer('position').default(0).notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Web Popups table (Announcement modal when opening website)
+export const webPopups = sqliteTable('web_popups', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title').notNull(),
+  tag: text('tag'),
+  description: text('description').notNull(),
+  imageUrl: text('image_url'),
+  buttonText: text('button_text'),
+  buttonUrl: text('button_url'),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
