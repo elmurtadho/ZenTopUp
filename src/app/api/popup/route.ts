@@ -4,6 +4,8 @@ import { webPopups } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { seedDatabase } from '@/db/seed';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await seedDatabase();
