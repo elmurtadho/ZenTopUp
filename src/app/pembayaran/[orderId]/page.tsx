@@ -43,6 +43,10 @@ export default function PaymentPage({ params }: PageProps) {
   const [orderData, setOrderData] = useState<{
     gameName: string;
     itemName: string;
+    itemPrice?: number;
+    discountAmount?: number;
+    adminFee?: number;
+    promoCode?: string | null;
     totalAmount: number;
     paymentMethod: string;
     externalRef: string;
@@ -51,6 +55,10 @@ export default function PaymentPage({ params }: PageProps) {
   }>({
     gameName: 'Mobile Legends: Bang Bang',
     itemName: 'Weekly Diamond Pass',
+    itemPrice: 79000,
+    discountAmount: 0,
+    adminFee: 0,
+    promoCode: null,
     totalAmount: 79000,
     paymentMethod: 'BCA Virtual Account',
     externalRef: '8801' + orderId.replace(/\D/g, '').padEnd(10, '7'),
@@ -69,6 +77,10 @@ export default function PaymentPage({ params }: PageProps) {
               ...prev,
               gameName: d.game || prev.gameName,
               itemName: d.item || prev.itemName,
+              itemPrice: d.itemPrice ?? prev.itemPrice,
+              discountAmount: d.discountAmount ?? 0,
+              adminFee: d.adminFee ?? prev.adminFee,
+              promoCode: d.promoCode ?? null,
               totalAmount: d.totalAmount || prev.totalAmount,
               paymentMethod: d.paymentMethod || prev.paymentMethod,
               externalRef: d.externalRef || prev.externalRef,
@@ -340,10 +352,24 @@ export default function PaymentPage({ params }: PageProps) {
                 {/* Total amount */}
                 <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <span className="text-xs text-slate-400 block">Total yang Harus Dibayar</span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-cyan-400">
-                      Rp {orderData.totalAmount.toLocaleString('id-ID')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 block">Total yang Harus Dibayar</span>
+                      {(orderData.discountAmount ?? 0) > 0 && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                          Hemat Rp {(orderData.discountAmount ?? 0).toLocaleString('id-ID')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                      {(orderData.discountAmount ?? 0) > 0 && (
+                        <span className="text-sm text-slate-500 line-through font-semibold">
+                          Rp {((orderData.itemPrice ?? orderData.totalAmount) + (orderData.adminFee ?? matchedMethod.adminFee ?? 0)).toLocaleString('id-ID')}
+                        </span>
+                      )}
+                      <span className="text-xl sm:text-2xl font-extrabold text-cyan-400">
+                        Rp {orderData.totalAmount.toLocaleString('id-ID')}
+                      </span>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -399,10 +425,10 @@ export default function PaymentPage({ params }: PageProps) {
                   orderId={orderId}
                   gameName={orderData.gameName}
                   itemName={orderData.itemName}
-                  itemPrice={Math.max(0, orderData.totalAmount - (matchedMethod.adminFee || 0))}
+                  itemPrice={orderData.itemPrice || Math.max(0, orderData.totalAmount + (orderData.discountAmount || 0) - (matchedMethod.adminFee || 0))}
                   paymentMethod={matchedMethod}
-                  promo={null}
-                  discountAmount={0}
+                  promo={orderData.promoCode ? { code: orderData.promoCode } : null}
+                  discountAmount={orderData.discountAmount || 0}
                 />
 
                 {/* Check Status Button */}

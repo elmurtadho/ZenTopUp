@@ -10,7 +10,7 @@ interface PaymentBillingSummaryProps {
   itemName: string;
   itemPrice: number;
   paymentMethod: PaymentMethod | null;
-  promo: Promo | null;
+  promo?: Partial<Promo> | null;
   discountAmount: number;
   onPayNow?: () => void;
   isProcessing?: boolean;
@@ -36,9 +36,9 @@ export default function PaymentBillingSummary({
     { label: 'Harga Item', value: `Rp ${itemPrice.toLocaleString('id-ID')}` },
   ];
 
-  if (discountAmount > 0 && promo) {
+  if (discountAmount > 0) {
     rows.push({
-      label: `Diskon (${promo.code})`,
+      label: promo?.code ? `Diskon (${promo.code})` : 'Diskon Promo',
       value: `-Rp ${discountAmount.toLocaleString('id-ID')}`,
       color: 'text-emerald-400',
     });

@@ -18,12 +18,14 @@ export default function KonfirmasiPage({ params, searchParams }: PageProps) {
     gameName: string;
     itemName: string;
     totalAmount: number;
+    discountAmount?: number;
     paymentMethod: string;
     status: 'success' | 'pending' | 'failed';
   }>({
     gameName: 'Mobile Legends: Bang Bang',
     itemName: 'Weekly Diamond Pass',
     totalAmount: 79000,
+    discountAmount: 0,
     paymentMethod: method === 'saldo' ? 'Saldo Dompet TokoGem' : 'BCA Virtual Account',
     status: (status === 'pending' || status === 'failed') ? status : 'success',
   });
@@ -47,6 +49,7 @@ export default function KonfirmasiPage({ params, searchParams }: PageProps) {
               gameName: d.game || 'Game',
               itemName: d.item || 'Item Top Up',
               totalAmount: d.totalAmount || 79000,
+              discountAmount: d.discountAmount || 0,
               paymentMethod: d.paymentMethod || (method === 'saldo' ? 'Saldo Dompet TokoGem' : 'BCA Virtual Account'),
               status: mappedStatus,
             });
@@ -70,6 +73,7 @@ export default function KonfirmasiPage({ params, searchParams }: PageProps) {
       gameName={orderData.gameName}
       itemName={orderData.itemName}
       totalAmount={orderData.totalAmount}
+      discountAmount={(orderData as any).discountAmount || 0}
       paymentMethod={orderData.paymentMethod}
       onRetry={handleRetry}
     />

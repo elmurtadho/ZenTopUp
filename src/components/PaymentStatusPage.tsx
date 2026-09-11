@@ -26,6 +26,7 @@ interface PaymentStatusPageProps {
   gameName?: string;
   itemName?: string;
   totalAmount?: number;
+  discountAmount?: number;
   paymentMethod?: string;
   onRetry?: () => void;
 }
@@ -66,6 +67,7 @@ export default function PaymentStatusPage({
   gameName = 'Mobile Legends: Bang Bang',
   itemName = 'Weekly Diamond Pass',
   totalAmount = 79000,
+  discountAmount = 0,
   paymentMethod = 'BCA Virtual Account',
   onRetry,
 }: Partial<PaymentStatusPageProps>) {
@@ -220,6 +222,12 @@ export default function PaymentStatusPage({
               <span className="text-slate-400">Metode Bayar</span>
               <span className="font-semibold text-white">{paymentMethod}</span>
             </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between items-center text-emerald-400">
+                <span>Diskon Promo</span>
+                <span className="font-bold">-Rp {discountAmount.toLocaleString('id-ID')}</span>
+              </div>
+            )}
             <div className="pt-2 border-t border-slate-800 flex justify-between items-center">
               <span className="font-bold text-slate-300">Total</span>
               <span className="text-base font-extrabold text-cyan-400">Rp {totalAmount?.toLocaleString('id-ID')}</span>

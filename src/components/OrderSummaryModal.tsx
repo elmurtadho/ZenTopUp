@@ -133,13 +133,13 @@ export default function OrderSummaryModal({
             <span>Rp {itemPrice.toLocaleString('id-ID')}</span>
           </div>
 
-          {discountAmount > 0 && promo && (
+          {discountAmount > 0 && (
             <div className="flex items-center justify-between text-emerald-400">
               <span className="flex items-center gap-1">
                 <Tag className="w-3 h-3" />
-                Voucher ({promo.code}):
+                Voucher {promo?.code ? `(${promo.code})` : ''}:
               </span>
-              <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
+              <span className="font-bold">-Rp {discountAmount.toLocaleString('id-ID')}</span>
             </div>
           )}
 

@@ -205,6 +205,7 @@ export default function GameDetailPage({ params }: PageProps) {
         gameId: game.id,
         gameSlug: game.slug,
         itemId: selectedItem?.id,
+        itemName: selectedItem?.name,
         gameUserId: userId,
         serverId: serverId || null,
         whatsapp: whatsapp,
@@ -534,6 +535,7 @@ export default function GameDetailPage({ params }: PageProps) {
                 methods={MOCK_PAYMENT_METHODS}
                 selectedMethod={selectedPayment}
                 itemPrice={itemPrice}
+                discountAmount={discountAmount}
                 userBalance={user?.balance || 0}
                 isGuest={isGuest}
                 onSelectMethod={(method) => {
@@ -687,9 +689,16 @@ export default function GameDetailPage({ params }: PageProps) {
 
                 <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
                   <span className="text-sm font-bold text-white">Total Pembayaran:</span>
-                  <span className="text-lg font-extrabold text-cyan-400">
-                    Rp {totalPrice.toLocaleString('id-ID')}
-                  </span>
+                  <div className="text-right">
+                    {discountAmount > 0 && (
+                      <span className="text-xs text-slate-500 line-through block">
+                        Rp {(itemPrice + adminFee).toLocaleString('id-ID')}
+                      </span>
+                    )}
+                    <span className="text-lg font-extrabold text-cyan-400">
+                      Rp {totalPrice.toLocaleString('id-ID')}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -734,8 +743,13 @@ export default function GameDetailPage({ params }: PageProps) {
             <span className="text-[11px] text-slate-400 block truncate">
               {selectedItem ? selectedItem.name : 'Pilih item top up'}
             </span>
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-1.5">
               <span className="text-[11px] text-slate-400">Total:</span>
+              {discountAmount > 0 && (
+                <span className="text-xs text-slate-500 line-through">
+                  Rp {(itemPrice + adminFee).toLocaleString('id-ID')}
+                </span>
+              )}
               <span className="text-base sm:text-lg font-extrabold text-cyan-400">
                 Rp {totalPrice.toLocaleString('id-ID')}
               </span>

@@ -31,13 +31,63 @@ export async function POST(request: NextRequest) {
 
     if (!promo) {
       return NextResponse.json(
-        { valid: false, message: 'Kode promo tidak valid atau sudah kedaluwarsa' },
+        { valid: false, message: `Kode promo ${normalizedCode} tidak ditemukan atau tidak aktif` },
         { status: 404 }
       );
     }
 
-    // Check specific game restriction
-    if (promo.gameSlug && gameSlug && promo.gameSlug !== gameSlug) {
+    // 1. Check expiration date
+    if (promo.endsAt) {
+      const end = new Date(promo.endsAt);
+      if (promo.endsAt.length <= 10) {
+        end.setHours(23, 59, 59, 999);
+      }
+      if (Date.now() > end.getTime()) {
+        const formattedEnd = new Intl.DateTimeFormat('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(end);
+        return NextResponse.json(
+          {
+            valid: false,
+            message: `Kode promo ${normalizedCode} sudah kedaluwarsa (berakhir pada ${formattedEnd})`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 2. Check start date
+    if (promo.startsAt) {
+      const start = new Date(promo.startsAt);
+      if (promo.startsAt.length <= 10) {
+        start.setHours(0, 0, 0, 0);
+      }
+      if (Date.now() < start.getTime()) {
+        const formattedStart = new Intl.DateTimeFormat('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(start);
+        return NextResponse.json(
+          {
+            valid: false,
+            message: `Kode promo ${normalizedCode} belum dapat digunakan (berlaku mulai ${formattedStart})`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 3. Check specific game restriction
+    const isGameMatch = !promo.gameSlug || 
+      !gameSlug || 
+      promo.gameSlug === gameSlug ||
+      (promo.gameSlug === 'mobile-legends' && gameSlug.includes('mobile-legends')) ||
+      (promo.gameSlug.includes('mobile-legends') && gameSlug === 'mobile-legends');
+
+    if (!isGameMatch) {
       return NextResponse.json(
         {
           valid: false,
@@ -47,9 +97,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check minimum purchase amount
+    // 4. Check minimum purchase amount
     const parsedAmount = Number(amount) || 0;
-    if (parsedAmount < promo.minPurchase) {
+    if (parsedAmount > 0 && parsedAmount < promo.minPurchase) {
       return NextResponse.json(
         {
           valid: false,

@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { orders, payments, games, items, promos, paymentMethods, notifications } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { seedDatabase } from '@/db/seed';
+import { MOCK_GAMES } from '@/data/mockGames';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,7 @@ export async function POST(request: NextRequest) {
       gameId,
       gameSlug,
       itemId,
+      itemName,
       gameUserId,
       serverId,
       whatsapp,
@@ -38,13 +40,54 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Find game & item
+    let resolvedGame;
+    if (gameId && !isNaN(Number(gameId))) {
+      const gRes = await db.select().from(games).where(eq(games.id, Number(gameId)));
+      resolvedGame = gRes[0];
+    }
+    if (!resolvedGame && gameSlug) {
+      const gRes = await db.select().from(games).where(eq(games.slug, String(gameSlug)));
+      resolvedGame = gRes[0];
+    }
+
     let resolvedItem;
-    if (itemId) {
+    if (itemId && !isNaN(Number(itemId))) {
       const itemResults = await db
         .select()
         .from(items)
         .where(eq(items.id, Number(itemId)));
       resolvedItem = itemResults[0];
+    }
+
+    // If resolvedItem is not found yet, find within resolvedGame by itemName or mock item ID
+    if (!resolvedItem && resolvedGame) {
+      const gameItems = await db
+        .select()
+        .from(items)
+        .where(eq(items.gameId, resolvedGame.id));
+
+      if (itemName) {
+        resolvedItem = gameItems.find(
+          (i) => i.name.toLowerCase() === String(itemName).toLowerCase()
+        );
+      }
+
+      if (!resolvedItem && itemId) {
+        // Match string item id (e.g. 'ml-1') against MOCK_GAMES
+        for (const mg of MOCK_GAMES) {
+          const mItem = mg.items?.find((mi) => mi.id === itemId);
+          if (mItem) {
+            resolvedItem = gameItems.find(
+              (i) => i.name.toLowerCase() === mItem.name.toLowerCase()
+            );
+            break;
+          }
+        }
+      }
+
+      if (!resolvedItem && gameItems.length > 0) {
+        resolvedItem = gameItems[0];
+      }
     }
 
     if (!resolvedItem) {
@@ -54,12 +97,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const gameResults = await db
-      .select()
-      .from(games)
-      .where(eq(games.id, resolvedItem.gameId));
-
-    const resolvedGame = gameResults[0];
+    if (!resolvedGame) {
+      const gameResults = await db
+        .select()
+        .from(games)
+        .where(eq(games.id, resolvedItem.gameId));
+      resolvedGame = gameResults[0];
+    }
 
     if (!resolvedGame) {
       return NextResponse.json(
@@ -89,7 +133,7 @@ export async function POST(request: NextRequest) {
       itemPrice = resolvedItem.memberPrice;
     }
 
-    // 4. Calculate promo discount if applied
+    // 4. Calculate promo discount if applied with strict expiration validation
     let discountAmount = 0;
     let validPromoCode = null;
 
@@ -102,16 +146,27 @@ export async function POST(request: NextRequest) {
 
       const promo = promoResults[0];
 
-      if (promo && itemPrice >= promo.minPurchase) {
-        if (!promo.gameSlug || promo.gameSlug === resolvedGame.slug) {
-          validPromoCode = promo.code;
-          if (promo.discountType === 'percent') {
-            const calculated = Math.round((itemPrice * promo.amount) / 100);
-            discountAmount = promo.maxDiscount
-              ? Math.min(calculated, promo.maxDiscount)
-              : calculated;
-          } else {
-            discountAmount = Math.min(itemPrice, promo.amount);
+      if (promo) {
+        const now = new Date();
+        const isExpired = promo.endsAt && new Date(promo.endsAt) < now;
+        const notStarted = promo.startsAt && new Date(promo.startsAt) > now;
+
+        if (!isExpired && !notStarted && itemPrice >= promo.minPurchase) {
+          const gameMatches =
+            !promo.gameSlug ||
+            promo.gameSlug === resolvedGame.slug ||
+            (promo.gameSlug.includes('mobile-legends') && resolvedGame.slug.includes('mobile-legends'));
+
+          if (gameMatches) {
+            validPromoCode = promo.code;
+            if (promo.discountType === 'percent') {
+              const calculated = Math.round((itemPrice * promo.amount) / 100);
+              discountAmount = promo.maxDiscount
+                ? Math.min(calculated, promo.maxDiscount)
+                : calculated;
+            } else {
+              discountAmount = Math.min(itemPrice, promo.amount);
+            }
           }
         }
       }

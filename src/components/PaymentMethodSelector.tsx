@@ -8,6 +8,7 @@ interface PaymentMethodSelectorProps {
   methods: PaymentMethod[];
   selectedMethod: PaymentMethod | null;
   itemPrice: number;
+  discountAmount?: number;
   userBalance?: number;
   isGuest?: boolean;
   onSelectMethod: (method: PaymentMethod) => void;
@@ -27,6 +28,7 @@ export default function PaymentMethodSelector({
   methods,
   selectedMethod,
   itemPrice,
+  discountAmount = 0,
   userBalance = 0,
   isGuest = true,
   onSelectMethod,
@@ -86,8 +88,11 @@ export default function PaymentMethodSelector({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 sm:p-3 bg-slate-950/50">
                 {categoryMethods.map((method) => {
                   const isSelected = selectedMethod?.id === method.id;
-                  const total = itemPrice + method.adminFee;
                   const isSaldo = method.id === 'saldo';
+                  const fee = isSaldo ? 0 : method.adminFee;
+                  const effectiveItemPrice = Math.max(0, itemPrice - (discountAmount || 0));
+                  const total = effectiveItemPrice + fee;
+                  const originalTotal = itemPrice + fee;
                   const isInsufficient = isSaldo && !isGuest && userBalance < total;
 
                   return (
@@ -133,7 +138,7 @@ export default function PaymentMethodSelector({
                                 <span className="text-amber-400 font-semibold">Wajib Login Member/Reseller</span>
                               ) : isInsufficient ? (
                                 <span className="text-red-400 font-semibold">
-                                  Saldo Kurang (Sisa Rp {userBalance.toLocaleString('id-ID')})
+                                   Saldo Kurang (Sisa Rp {userBalance.toLocaleString('id-ID')})
                                 </span>
                               ) : (
                                 <span className="text-emerald-400 font-semibold">
@@ -152,7 +157,12 @@ export default function PaymentMethodSelector({
                       <div className="text-right shrink-0 ml-1.5 sm:ml-2">
                         {isSelected ? (
                           <div className="flex flex-col items-end gap-0.5">
-                            <span className="text-[11px] sm:text-xs font-bold text-white whitespace-nowrap">
+                            {discountAmount > 0 && (
+                              <span className="text-[10px] text-slate-500 line-through whitespace-nowrap">
+                                Rp {originalTotal.toLocaleString('id-ID')}
+                              </span>
+                            )}
+                            <span className={`text-[11px] sm:text-xs font-bold whitespace-nowrap ${discountAmount > 0 ? 'text-emerald-400 font-extrabold' : 'text-white'}`}>
                               Rp {total.toLocaleString('id-ID')}
                             </span>
                             <span
@@ -165,9 +175,16 @@ export default function PaymentMethodSelector({
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] sm:text-xs font-bold text-slate-400 whitespace-nowrap">
-                            Rp {total.toLocaleString('id-ID')}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            {discountAmount > 0 && (
+                              <span className="text-[10px] text-slate-500 line-through whitespace-nowrap">
+                                Rp {originalTotal.toLocaleString('id-ID')}
+                              </span>
+                            )}
+                            <span className={`text-[11px] sm:text-xs font-bold whitespace-nowrap ${discountAmount > 0 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                              Rp {total.toLocaleString('id-ID')}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </button>
