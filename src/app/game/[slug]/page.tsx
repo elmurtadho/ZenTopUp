@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, use, useMemo } from 'react';
+import React, { useState, use, useMemo, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MOCK_GAMES, MOCK_PROMOS } from '@/data/mockGames';
@@ -9,7 +9,6 @@ import { GameItem, PaymentMethod, Promo } from '@/types';
 import { 
   Zap, 
   ShieldCheck, 
-  HelpCircle, 
   ChevronRight, 
   Check, 
   Flame, 
@@ -17,17 +16,21 @@ import {
   AlertCircle, 
   CreditCard, 
   UserCheck, 
-  Smartphone, 
-  Info,
-  ArrowLeft,
-  Lock,
-  Sparkles
+  ArrowLeft, 
+  Lock, 
+  Sparkles,
+  Crown,
+  User,
+  Users,
+  Wallet,
+  LogIn
 } from 'lucide-react';
-import ItemSelector from '@/components/ItemSelector';
+import ItemSelector, { getItemPriceForRole } from '@/components/ItemSelector';
 import PlayerIdForm from '@/components/PlayerIdForm';
 import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 import OrderSummaryModal from '@/components/OrderSummaryModal';
 import PromoForm from '@/components/PromoForm';
+import { useAuth } from '@/context/AuthContext';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -36,6 +39,9 @@ interface PageProps {
 export default function GameDetailPage({ params }: PageProps) {
   const { slug } = use(params);
   const router = useRouter();
+
+  const { user, isGuest, isMember, isReseller, deductBalance } = useAuth();
+  const activeRole = user?.role || 'guest';
 
   // Find game
   const game = MOCK_GAMES.find((g) => g.slug === slug);
@@ -47,16 +53,29 @@ export default function GameDetailPage({ params }: PageProps) {
   const [userId, setUserId] = useState('');
   const [serverId, setServerId] = useState(game.serverList ? game.serverList[0] : '');
   const [selectedItem, setSelectedItem] = useState<GameItem | null>(game.items?.[2] || game.items?.[0] || null);
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(MOCK_PAYMENT_METHODS[0]);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(
+    user ? MOCK_PAYMENT_METHODS[0] : MOCK_PAYMENT_METHODS[1]
+  );
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<Promo | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [whatsapp, setWhatsapp] = useState('');
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [saldoError, setSaldoError] = useState<string | null>(null);
 
-  // Price calculations
-  const itemPrice = selectedItem?.price || 0;
+  // Auto-fill WhatsApp if user is logged in
+  useEffect(() => {
+    if (user?.phone && !whatsapp) {
+      setWhatsapp(user.phone);
+    }
+  }, [user]);
+
+  // Price calculations based on active role
+  const itemPrice = useMemo(() => {
+    if (!selectedItem) return 0;
+    return getItemPriceForRole(selectedItem, activeRole);
+  }, [selectedItem, activeRole]);
   
   const discountAmount = useMemo(() => {
     if (!appliedPromo || !selectedItem) return 0;
@@ -140,6 +159,15 @@ export default function GameDetailPage({ params }: PageProps) {
       errors.payment = 'Silakan pilih metode pembayaran';
     }
 
+    // If payment is Saldo, check requirements
+    if (selectedPayment?.id === 'saldo') {
+      if (isGuest || !user) {
+        errors.payment = 'Pembayaran dengan Saldo TokoGem memerlukan login akun Member / Reseller';
+      } else if (user.balance < totalPrice) {
+        errors.payment = `Saldo TokoGem tidak cukup (Saldo: Rp ${user.balance.toLocaleString('id-ID')} / Butuh: Rp ${totalPrice.toLocaleString('id-ID')})`;
+      }
+    }
+
     const trimmedWa = whatsapp.trim().replace(/[-\s]/g, '');
     if (!trimmedWa) {
       errors.whatsapp = 'Nomor WhatsApp wajib diisi untuk bukti transaksi';
@@ -153,30 +181,54 @@ export default function GameDetailPage({ params }: PageProps) {
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+    setSaldoError(null);
     if (!validateForm()) {
-      // Smooth scroll to first error
       window.scrollTo({ top: 300, behavior: 'smooth' });
       return;
     }
     setShowSummaryModal(true);
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     setIsProcessing(true);
+    const mockOrderId = 'GEM-' + Math.floor(100000 + Math.random() * 900000);
+
+    // If paid with Saldo TokoGem
+    if (selectedPayment?.id === 'saldo') {
+      if (user && user.balance >= totalPrice) {
+        const res = await deductBalance(
+          totalPrice,
+          mockOrderId,
+          `Top up ${game.name} - ${selectedItem?.name} (${userId})`
+        );
+        if (res.success) {
+          setIsProcessing(false);
+          setShowSummaryModal(false);
+          // Directly to success confirmation
+          router.push(`/konfirmasi/${mockOrderId}?method=saldo&status=berhasil`);
+          return;
+        } else {
+          setIsProcessing(false);
+          setSaldoError(res.message || 'Gagal memotong saldo akun');
+          return;
+        }
+      }
+    }
+
+    // Regular payment (QRIS, VA, E-Wallet)
     setTimeout(() => {
       setIsProcessing(false);
       setShowSummaryModal(false);
-      const mockOrderId = 'GEM-' + Math.floor(100000 + Math.random() * 900000);
       router.push(`/pembayaran/${mockOrderId}`);
     }, 1000);
   };
 
   return (
     <div className="py-6 sm:py-10 pb-28 lg:pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-2 text-xs text-slate-400 mb-5 sm:mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
           <Link href="/" className="hover:text-blue-400 transition flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Katalog Game</span>
@@ -185,8 +237,102 @@ export default function GameDetailPage({ params }: PageProps) {
           <span className="text-slate-200 font-semibold">{game.name}</span>
         </div>
 
+        {/* ROLE & AUTH STATUS GATE BANNER */}
+        {isGuest ? (
+          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-blue-950/80 via-slate-900 to-indigo-950/80 border border-blue-500/40 p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in duration-300">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-cyan-400 border border-blue-500/30 flex items-center justify-center shrink-0 shadow-inner">
+                <Users className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-extrabold text-white text-sm sm:text-base">
+                    Kamu sedang dalam Mode Guest (Tamu)
+                  </h4>
+                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-bold">
+                    Harga Normal
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Ingin harga lebih murah &amp; bayar instan pakai Saldo Rp 0 Biaya Admin? Masuk sebagai 
+                  <strong className="text-cyan-400"> Member</strong> atau 
+                  <strong className="text-amber-400"> Mitra Reseller</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <Link
+                href={`/masuk?redirect=/game/${game.slug}`}
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-slate-950 font-extrabold text-xs shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Masuk / Daftar</span>
+              </Link>
+            </div>
+          </div>
+        ) : isReseller ? (
+          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-rose-950/40 border border-amber-500/40 p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <Crown className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-white text-sm sm:text-base">
+                    Mitra VIP Reseller: {user?.name}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                    VIP Grosir
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Saldo Akun: <strong className="text-emerald-400 font-mono">Rp {user?.balance ? user.balance.toLocaleString('id-ID') : '0'}</strong> • Kamu mendapatkan harga termurah untuk semua item!
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/akun"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs border border-amber-500/30 transition flex items-center gap-1.5 shrink-0"
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Kelola Saldo</span>
+            </Link>
+          </div>
+        ) : (
+          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-blue-950/40 via-slate-900 to-cyan-950/40 border border-cyan-500/40 p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                <User className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-white text-sm sm:text-base">
+                    Akun Member: {user?.name}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                    Member Aktif
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Saldo Dompet: <strong className="text-emerald-400 font-mono">Rp {user?.balance.toLocaleString('id-ID')}</strong> • Diskon member otomatis diterapkan!
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/akun"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs border border-cyan-500/30 transition flex items-center gap-1.5 shrink-0"
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Isi Saldo</span>
+            </Link>
+          </div>
+        )}
+
         {/* Top Game Hero Card */}
-        <div className="relative rounded-2xl md:rounded-3xl bg-[#111827] border border-slate-800 p-5 sm:p-7 md:p-8 mb-6 sm:mb-8 overflow-hidden">
+        <div className="relative rounded-2xl md:rounded-3xl bg-[#111827] border border-slate-800 p-5 sm:p-7 md:p-8 overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[100px] rounded-full pointer-events-none" />
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 relative z-10">
@@ -253,7 +399,7 @@ export default function GameDetailPage({ params }: PageProps) {
               />
             </div>
 
-            {/* STEP 2: Pilih Nominal */}
+            {/* STEP 2: Pilih Nominal dengan Multi-Tier Price */}
             <div className="rounded-2xl bg-[#111827] border border-slate-800 p-4 sm:p-6 shadow-md">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
@@ -262,7 +408,9 @@ export default function GameDetailPage({ params }: PageProps) {
                   </div>
                   <div>
                     <h3 className="font-bold text-white text-base sm:text-lg">Pilih Nominal Top Up</h3>
-                    <p className="text-xs text-slate-400">Pilih item atau nominal yang ingin kamu beli</p>
+                    <p className="text-xs text-slate-400">
+                      Harga disesuaikan dengan tier akun ({activeRole.toUpperCase()})
+                    </p>
                   </div>
                 </div>
               </div>
@@ -278,6 +426,7 @@ export default function GameDetailPage({ params }: PageProps) {
                 <ItemSelector
                   items={game.items}
                   selectedItem={selectedItem}
+                  userRole={activeRole}
                   onSelectItem={(item) => {
                     setSelectedItem(item);
                     setFormErrors((prev) => ({ ...prev, item: undefined }));
@@ -286,7 +435,7 @@ export default function GameDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* STEP 3: Metode Pembayaran */}
+            {/* STEP 3: Metode Pembayaran (Termasuk Saldo TokoGem) */}
             <div className="rounded-2xl bg-[#111827] border border-slate-800 p-4 sm:p-6 shadow-md">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center">
@@ -294,7 +443,7 @@ export default function GameDetailPage({ params }: PageProps) {
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-base sm:text-lg">Pilih Metode Pembayaran</h3>
-                  <p className="text-xs text-slate-400">Mendukung berbagai e-wallet, VA, dan transfer bank</p>
+                  <p className="text-xs text-slate-400">Mendukung Saldo TokoGem instan, QRIS, e-wallet, dan VA</p>
                 </div>
               </div>
 
@@ -308,7 +457,9 @@ export default function GameDetailPage({ params }: PageProps) {
               <PaymentMethodSelector
                 methods={MOCK_PAYMENT_METHODS}
                 selectedMethod={selectedPayment}
-                itemPrice={selectedItem ? selectedItem.price : 0}
+                itemPrice={itemPrice}
+                userBalance={user?.balance || 0}
+                isGuest={isGuest}
                 onSelectMethod={(method) => {
                   setSelectedPayment(method);
                   setFormErrors((prev) => ({ ...prev, payment: undefined }));
@@ -324,7 +475,7 @@ export default function GameDetailPage({ params }: PageProps) {
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-base sm:text-lg">Kode Promo &amp; Kontak</h3>
-                  <p className="text-xs text-slate-400">Dapatkan diskon dan bukti transaksi instan</p>
+                  <p className="text-xs text-slate-400">Dapatkan diskon ekstra dan bukti invoice transaksi</p>
                 </div>
               </div>
 
@@ -383,10 +534,28 @@ export default function GameDetailPage({ params }: PageProps) {
           {/* Right Sticky Order Summary Card */}
           <div className="lg:col-span-4">
             <div className="sticky top-24 rounded-2xl bg-[#111827] border border-slate-800 p-6 shadow-xl space-y-5">
-              <h3 className="font-bold text-white text-lg pb-3 border-b border-slate-800 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-blue-400" />
-                <span>Ringkasan Pesanan</span>
-              </h3>
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-blue-400" />
+                  <span>Ringkasan Pesanan</span>
+                </h3>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                  isReseller
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : isMember
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    : 'bg-slate-800 text-slate-400'
+                }`}>
+                  Tier: {activeRole}
+                </span>
+              </div>
+
+              {saldoError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{saldoError}</span>
+                </div>
+              )}
 
               <div className="space-y-3 text-xs">
                 <div className="flex items-center justify-between text-slate-300">
@@ -413,12 +582,15 @@ export default function GameDetailPage({ params }: PageProps) {
 
                 <div className="flex items-center justify-between text-slate-300">
                   <span>Metode Bayar:</span>
-                  <strong className="text-white">{selectedPayment?.name || '—'}</strong>
+                  <strong className="text-white flex items-center gap-1">
+                    {selectedPayment?.id === 'saldo' && <Wallet className="w-3.5 h-3.5 text-emerald-400" />}
+                    <span>{selectedPayment?.name || '—'}</span>
+                  </strong>
                 </div>
 
                 <div className="pt-3 border-t border-slate-800 space-y-2">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span>Harga Item:</span>
+                    <span>Harga Item ({activeRole}):</span>
                     <span>Rp {itemPrice.toLocaleString('id-ID')}</span>
                   </div>
 
@@ -431,7 +603,9 @@ export default function GameDetailPage({ params }: PageProps) {
 
                   <div className="flex items-center justify-between text-slate-400">
                     <span>Biaya Admin:</span>
-                    <span>Rp {adminFee.toLocaleString('id-ID')}</span>
+                    <span className={selectedPayment?.id === 'saldo' ? 'text-emerald-400 font-bold' : ''}>
+                      {selectedPayment?.id === 'saldo' ? 'Rp 0 (Bebas Biaya)' : `Rp ${adminFee.toLocaleString('id-ID')}`}
+                    </span>
                   </div>
                 </div>
 
@@ -447,10 +621,23 @@ export default function GameDetailPage({ params }: PageProps) {
               <button
                 type="button"
                 onClick={handleCheckout}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-extrabold text-sm shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                className={`w-full py-3.5 rounded-xl font-extrabold text-sm shadow-lg transition duration-200 flex items-center justify-center gap-2 cursor-pointer ${
+                  selectedPayment?.id === 'saldo'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 shadow-emerald-500/25'
+                    : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-blue-600/30'
+                }`}
               >
-                <Lock className="w-4 h-4" />
-                <span>Beli Sekarang</span>
+                {selectedPayment?.id === 'saldo' ? (
+                  <>
+                    <Wallet className="w-4 h-4" />
+                    <span>Bayar Pakai Saldo TokoGem</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Beli Sekarang</span>
+                  </>
+                )}
               </button>
 
               <div className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 pt-1">

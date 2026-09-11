@@ -181,14 +181,40 @@ export async function initDatabase() {
         is_active INTEGER NOT NULL DEFAULT 1,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS wallet_transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        balance_before INTEGER NOT NULL,
+        balance_after INTEGER NOT NULL,
+        reference_id TEXT,
+        description TEXT NOT NULL,
+        payment_method TEXT,
+        status TEXT NOT NULL DEFAULT 'berhasil',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
-    // Safe migration: add cost_price column to items if not exists
-    try {
-      await client.execute('ALTER TABLE items ADD COLUMN cost_price INTEGER DEFAULT 0;');
-    } catch {
-      // Column already exists, ignore
+    // Safe migrations for new columns
+    const safeAlterQueries = [
+      'ALTER TABLE items ADD COLUMN cost_price INTEGER DEFAULT 0;',
+      'ALTER TABLE items ADD COLUMN member_price INTEGER;',
+      'ALTER TABLE items ADD COLUMN reseller_price INTEGER;',
+      'ALTER TABLE users ADD COLUMN balance INTEGER DEFAULT 0;',
+      'ALTER TABLE users ADD COLUMN gem_points INTEGER DEFAULT 0;',
+      'ALTER TABLE orders ADD COLUMN user_role TEXT DEFAULT "guest";',
+    ];
+
+    for (const q of safeAlterQueries) {
+      try {
+        await client.execute(q);
+      } catch {
+        // Column already exists or error, safely ignore
+      }
     }
+
     dbInitialized = true;
   } catch (err) {
     console.warn('[DB] Warning during table init:', err);

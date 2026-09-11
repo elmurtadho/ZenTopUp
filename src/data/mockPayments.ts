@@ -1,6 +1,20 @@
 import { PaymentMethod } from '@/types';
 
 export const MOCK_PAYMENT_METHODS: PaymentMethod[] = [
+  // Saldo TokoGem (Dompet Digital Akun)
+  {
+    id: 'saldo',
+    name: 'Saldo Dompet TokoGem (Bayar Instan)',
+    category: 'Saldo',
+    icon: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100&auto=format&fit=crop&q=80',
+    adminFee: 0,
+    isPopular: true,
+    instructions: [
+      'Gunakan saldo akun TokoGem untuk pembayaran instan 1 detik.',
+      'Bebas biaya admin (Rp 0).',
+      'Pastikan saldo dompet kamu mencukupi total belanja.',
+    ],
+  },
   // QRIS
   {
     id: 'qris',

@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GameItem } from '@/types';
-import { Flame, Check, Sparkles, Gem } from 'lucide-react';
+import { GameItem, UserRole } from '@/types';
+import { Flame, Check, Sparkles, Crown, User, Tag } from 'lucide-react';
 
 interface ItemSelectorProps {
   items: GameItem[];
   selectedItem: GameItem | null;
   onSelectItem: (item: GameItem) => void;
+  userRole?: UserRole;
 }
 
 function getItemBadge(name: string) {
@@ -39,22 +40,37 @@ function getItemBadge(name: string) {
   return { label: 'Item Resmi', color: 'text-blue-400', icon: '💎' };
 }
 
+export function getItemPriceForRole(item: GameItem, role?: UserRole): number {
+  if (role === 'reseller') {
+    return item.resellerPrice || Math.round(item.price * 0.90);
+  }
+  if (role === 'member') {
+    return item.memberPrice || Math.round(item.price * 0.96);
+  }
+  return item.price;
+}
+
 export default function ItemSelector({
   items,
   selectedItem,
   onSelectItem,
+  userRole = 'guest',
 }: ItemSelectorProps) {
   const [activeTab, setActiveTab] = useState<'semua' | 'populer' | 'pass'>('semua');
 
   const filteredItems = items.filter((item) => {
     if (activeTab === 'populer') return item.isPopular;
-    if (activeTab === 'pass') return item.name.toLowerCase().includes('pass') || item.name.toLowerCase().includes('membership') || item.name.toLowerCase().includes('card') || item.name.toLowerCase().includes('welkin');
+    if (activeTab === 'pass') {
+      const lower = item.name.toLowerCase();
+      return lower.includes('pass') || lower.includes('membership') || lower.includes('card') || lower.includes('welkin');
+    }
     return true;
   });
 
-  const hasPasses = items.some(
-    (i) => i.name.toLowerCase().includes('pass') || i.name.toLowerCase().includes('membership') || i.name.toLowerCase().includes('card') || i.name.toLowerCase().includes('welkin')
-  );
+  const hasPasses = items.some((i) => {
+    const lower = i.name.toLowerCase();
+    return lower.includes('pass') || lower.includes('membership') || lower.includes('card') || lower.includes('welkin');
+  });
 
   return (
     <div className="space-y-4">
@@ -64,7 +80,7 @@ export default function ItemSelector({
           <button
             type="button"
             onClick={() => setActiveTab('semua')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
               activeTab === 'semua'
                 ? 'bg-blue-600 text-white'
                 : 'bg-slate-900 text-slate-400 hover:text-white'
@@ -75,7 +91,7 @@ export default function ItemSelector({
           <button
             type="button"
             onClick={() => setActiveTab('populer')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1 transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1 transition cursor-pointer ${
               activeTab === 'populer'
                 ? 'bg-blue-600 text-white'
                 : 'bg-slate-900 text-slate-400 hover:text-white'
@@ -87,7 +103,7 @@ export default function ItemSelector({
           <button
             type="button"
             onClick={() => setActiveTab('pass')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1 transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1 transition cursor-pointer ${
               activeTab === 'pass'
                 ? 'bg-blue-600 text-white'
                 : 'bg-slate-900 text-slate-400 hover:text-white'
@@ -103,11 +119,12 @@ export default function ItemSelector({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
         {filteredItems.map((item) => {
           const isSelected = selectedItem?.id === item.id;
-          const discountPercent =
-            item.originalPrice && item.originalPrice > item.price
-              ? Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)
-              : null;
           const badge = getItemBadge(item.name);
+
+          const normalPrice = item.price;
+          const effectivePrice = getItemPriceForRole(item, userRole);
+          const memberP = getItemPriceForRole(item, 'member');
+          const resellerP = getItemPriceForRole(item, 'reseller');
 
           return (
             <button
@@ -120,46 +137,68 @@ export default function ItemSelector({
                   : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
               }`}
             >
-              {/* Badge */}
-              {item.isPopular && (
-                <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
-                  <Flame className="w-3 h-3 fill-current" /> Populer
+              {/* Badges */}
+              {userRole === 'reseller' ? (
+                <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 text-[9px] font-black flex items-center gap-1 shadow">
+                  <Crown className="w-2.5 h-2.5" /> VIP Reseller
                 </span>
-              )}
-
-              {discountPercent && !item.isPopular && (
-                <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-extrabold shadow-sm">
-                  Hemat {discountPercent}%
+              ) : userRole === 'member' ? (
+                <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[9px] font-black flex items-center gap-1 shadow">
+                  <Tag className="w-2.5 h-2.5" /> Member Diskon
                 </span>
-              )}
+              ) : item.isPopular ? (
+                <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-[9px] font-extrabold flex items-center gap-1 shadow-sm">
+                  <Flame className="w-2.5 h-2.5 fill-current" /> Populer
+                </span>
+              ) : null}
 
-              <div className="mb-3">
+              <div className="mb-2.5">
                 <div className="flex items-center gap-1.5 text-xs mb-1.5">
                   <span className="text-xs leading-none">{badge.icon}</span>
                   <span className={`font-semibold transition ${badge.color}`}>
                     {badge.label}
                   </span>
                 </div>
-                <span className="font-bold text-sm text-white block leading-snug">
+                <span className="font-bold text-xs sm:text-sm text-white block leading-snug">
                   {item.name}
                 </span>
-                {item.originalPrice && (
-                  <span className="text-[11px] text-slate-500 line-through mt-0.5 block">
-                    Rp {item.originalPrice.toLocaleString('id-ID')}
+
+                {/* Strikethrough if discounted */}
+                {effectivePrice < normalPrice && (
+                  <span className="text-[10px] text-slate-500 line-through mt-0.5 block">
+                    Rp {normalPrice.toLocaleString('id-ID')}
+                  </span>
+                )}
+
+                {/* Teaser for Guest */}
+                {userRole === 'guest' && (
+                  <span className="text-[9px] text-cyan-400/90 block mt-0.5 font-mono">
+                    Member: Rp {memberP.toLocaleString('id-ID')}
                   </span>
                 )}
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
-                <span className="text-sm font-extrabold text-cyan-400">
-                  Rp {item.price.toLocaleString('id-ID')}
-                </span>
+                <div>
+                  <span
+                    className={`text-xs sm:text-sm font-black ${
+                      userRole === 'reseller'
+                        ? 'text-amber-400'
+                        : userRole === 'member'
+                        ? 'text-cyan-400'
+                        : 'text-white'
+                    }`}
+                  >
+                    Rp {effectivePrice.toLocaleString('id-ID')}
+                  </span>
+                </div>
+
                 {isSelected ? (
-                  <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                  <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white shrink-0">
                     <Check className="w-3 h-3" />
                   </div>
                 ) : (
-                  <span className="text-[11px] text-slate-500 group-hover:text-slate-300 transition">
+                  <span className="text-[10px] text-slate-500 group-hover:text-slate-300 transition shrink-0">
                     Pilih
                   </span>
                 )}

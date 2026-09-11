@@ -28,7 +28,9 @@ export const items = sqliteTable('items', {
     .references(() => games.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   nominal: integer('nominal').notNull(),
-  price: integer('price').notNull(),
+  price: integer('price').notNull(), // Guest / Normal price
+  memberPrice: integer('member_price'), // Special Member price
+  resellerPrice: integer('reseller_price'), // VIP Reseller wholesale price
   originalPrice: integer('original_price'),
   costPrice: integer('cost_price').default(0),
   currency: text('currency').default('IDR').notNull(),
@@ -65,7 +67,9 @@ export const users = sqliteTable('users', {
   name: text('name').notNull(),
   avatarUrl: text('avatar_url'),
   memberLevel: text('member_level').default('Bronze').notNull(), // 'Bronze' | 'Silver' | 'Gold' | 'VIP Platinum'
-  role: text('role').default('user').notNull(), // 'user' | 'admin'
+  role: text('role').default('member').notNull(), // 'guest' | 'member' | 'reseller' | 'admin'
+  balance: integer('balance').default(0).notNull(), // Rupiah balance
+  gemPoints: integer('gem_points').default(0).notNull(),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
@@ -74,6 +78,7 @@ export const users = sqliteTable('users', {
 export const orders = sqliteTable('orders', {
   id: text('id').primaryKey(), // e.g. GEM-123456
   userId: integer('user_id').references(() => users.id),
+  userRole: text('user_role').default('guest'), // 'guest' | 'member' | 'reseller'
   gameId: integer('game_id')
     .notNull()
     .references(() => games.id),
@@ -176,6 +181,23 @@ export const webPopups = sqliteTable('web_popups', {
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Wallet Transactions table (Mutasi saldo dompet)
+export const walletTransactions = sqliteTable('wallet_transactions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // 'topup' | 'payment' | 'refund' | 'bonus'
+  amount: integer('amount').notNull(),
+  balanceBefore: integer('balance_before').notNull(),
+  balanceAfter: integer('balance_after').notNull(),
+  referenceId: text('reference_id'),
+  description: text('description').notNull(),
+  paymentMethod: text('payment_method'),
+  status: text('status').default('berhasil').notNull(), // 'berhasil' | 'pending' | 'gagal'
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Relations
 export const gamesRelations = relations(games, ({ many }) => ({
   items: many(items),
@@ -207,7 +229,15 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
   notifications: many(notifications),
 }));
 
+export const walletTransactionsRelations = relations(walletTransactions, ({ one }) => ({
+  user: one(users, {
+    fields: [walletTransactions.userId],
+    references: [users.id],
+  }),
+}));
+
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
   notifications: many(notifications),
+  walletTransactions: many(walletTransactions),
 }));
