@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Save,
-  Image as ImageIcon,
+  BellRing,
   Upload,
   Link as LinkIcon,
   Trash2,
@@ -14,23 +14,23 @@ import {
 } from 'lucide-react';
 import { compressImageFile } from '@/lib/imageCompression';
 
-interface BannerModalProps {
+interface PopupModalProps {
   isOpen: boolean;
-  banner?: any | null;
+  popup?: any | null;
   onClose: () => void;
-  onSave: (bannerData: any) => Promise<void>;
+  onSave: (popupData: any) => Promise<void>;
 }
 
-export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerModalProps) {
-  const isEdit = Boolean(banner);
+export default function PopupModal({ isOpen, popup, onClose, onSave }: PopupModalProps) {
+  const isEdit = Boolean(popup);
 
   const [formData, setFormData] = useState({
     title: '',
-    subtitle: '',
+    tag: 'PROMO SPESIAL',
+    description: '',
     imageUrl: '',
-    targetUrl: '/#katalog',
-    badgeText: 'EVENT SPESIAL',
-    position: 1,
+    buttonText: 'Ambil Promo Sekarang',
+    buttonUrl: '/promo',
     isActive: true,
   });
 
@@ -44,18 +44,18 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (banner) {
+    if (popup) {
       setFormData({
-        title: banner.title || '',
-        subtitle: banner.subtitle || '',
-        imageUrl: banner.imageUrl || '',
-        targetUrl: banner.targetUrl || '/#katalog',
-        badgeText: banner.badgeText || '',
-        position: banner.position !== undefined ? banner.position : 1,
-        isActive: banner.isActive !== undefined ? Boolean(banner.isActive) : true,
+        title: popup.title || '',
+        tag: popup.tag || 'PROMO SPESIAL',
+        description: popup.description || '',
+        imageUrl: popup.imageUrl || '',
+        buttonText: popup.buttonText || 'Ambil Promo Sekarang',
+        buttonUrl: popup.buttonUrl || '/promo',
+        isActive: popup.isActive !== undefined ? Boolean(popup.isActive) : true,
       });
-      // If banner already has an image and it's a URL (not base64), default to url tab
-      if (banner.imageUrl && !banner.imageUrl.startsWith('data:image/')) {
+
+      if (popup.imageUrl && !popup.imageUrl.startsWith('data:image/')) {
         setImageTab('url');
       } else {
         setImageTab('upload');
@@ -64,18 +64,18 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
     } else {
       setFormData({
         title: '',
-        subtitle: '',
+        tag: 'PROMO SPESIAL',
+        description: '',
         imageUrl: '',
-        targetUrl: '/#katalog',
-        badgeText: 'EVENT SPESIAL',
-        position: 1,
+        buttonText: 'Ambil Promo Sekarang',
+        buttonUrl: '/promo',
         isActive: true,
       });
       setImageTab('upload');
       setCompressionInfo(null);
     }
     setError(null);
-  }, [banner, isOpen]);
+  }, [popup, isOpen]);
 
   if (!isOpen) return null;
 
@@ -90,15 +90,15 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
       setIsCompressing(true);
       setError(null);
       const result = await compressImageFile(file, {
-        maxWidth: 1280,
-        maxHeight: 720,
+        maxWidth: 900,
+        maxHeight: 700,
         quality: 0.82,
         format: 'image/webp',
       });
 
       setFormData((prev) => ({ ...prev, imageUrl: result.dataUrl }));
       setCompressionInfo(
-        `Foto berhasil diunggah (${result.sizeKb} KB, ${result.width}x${result.height}px, dioptimasi dari ${result.originalSizeKb} KB)`
+        `Foto poster siap (${result.sizeKb} KB, ${result.width}x${result.height}px, dioptimasi dari ${result.originalSizeKb} KB)`
       );
     } catch (err: any) {
       setError(err.message || 'Gagal memproses dan mengompresi gambar.');
@@ -138,24 +138,21 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
     setError(null);
 
     if (!formData.title.trim()) {
-      setError('Judul banner wajib diisi.');
+      setError('Judul popup wajib diisi.');
       return;
     }
 
-    if (!formData.imageUrl.trim()) {
-      setError('Foto atau URL gambar banner wajib diisi.');
+    if (!formData.description.trim()) {
+      setError('Deskripsi pesan popup wajib diisi.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await onSave({
-        ...formData,
-        position: Number(formData.position) || 1,
-      });
+      await onSave(formData);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Gagal menyimpan banner.');
+      setError(err.message || 'Gagal menyimpan popup promo.');
     } finally {
       setIsSubmitting(false);
     }
@@ -167,14 +164,14 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
-              <ImageIcon className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center">
+              <BellRing className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-white text-base">
-                {isEdit ? `Edit Banner: ${banner.title}` : 'Tambah Banner Event Baru'}
+                {isEdit ? `Edit Popup: ${popup.title}` : 'Tambah Popup Promo Baru'}
               </h3>
-              <p className="text-slate-400 text-xs">Upload foto langsung atau masukkan URL banner</p>
+              <p className="text-slate-400 text-xs">Pop-up selamat datang dan promo awal buka web</p>
             </div>
           </div>
           <button
@@ -192,64 +189,54 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">
+                Tag / Label Badge
+              </label>
+              <input
+                type="text"
+                value={formData.tag}
+                onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                placeholder="e.g. FLASH SALE / PROMO MEMBER"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-rose-500 text-white uppercase font-bold outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">
+                Judul Pop-up <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="e.g. 🎉 Diskon Kilat Mobile Legends!"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-rose-500 text-white font-bold outline-none"
+                required
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block font-semibold text-slate-300 mb-1">
-              Judul Banner Event <span className="text-red-400">*</span>
+              Deskripsi / Pesan Pengumuman <span className="text-red-400">*</span>
             </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="e.g. Diskon Kilat Mobile Legends 30%"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 text-white font-medium outline-none"
+            <textarea
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Tuliskan info promo, voucher diskon, atau event yang sedang berlangsung..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-rose-500 text-white outline-none resize-none leading-relaxed"
               required
             />
           </div>
 
-          <div>
-            <label className="block font-semibold text-slate-300 mb-1">Deskripsi / Subtitle</label>
-            <textarea
-              rows={2}
-              value={formData.subtitle}
-              onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-              placeholder="Top up diamond MLBB termurah proses instan 1 detik..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 text-white outline-none resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold text-slate-300 mb-1">
-                Badge / Tag Text
-              </label>
-              <input
-                type="text"
-                value={formData.badgeText}
-                onChange={(e) => setFormData({ ...formData, badgeText: e.target.value })}
-                placeholder="HOT PROMO / FLASH SALE"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 text-white uppercase font-bold outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-slate-300 mb-1">
-                Urutan Tampil (Posisi)
-              </label>
-              <input
-                type="number"
-                value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: Number(e.target.value) })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 text-white font-bold outline-none"
-                min={1}
-              />
-            </div>
-          </div>
-
-          {/* Image Source Selection Tabs */}
+          {/* Image Tabs (Upload or URL) */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <label className="block font-semibold text-slate-300">
-                Gambar Poster Banner (16:9 Landscape) <span className="text-red-400">*</span>
+                Poster Gambar Popup (Opsional)
               </label>
               <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
                 <button
@@ -257,7 +244,7 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
                   onClick={() => setImageTab('upload')}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition ${
                     imageTab === 'upload'
-                      ? 'bg-indigo-600 text-white shadow'
+                      ? 'bg-rose-500 text-white shadow'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -269,7 +256,7 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
                   onClick={() => setImageTab('url')}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition ${
                     imageTab === 'url'
-                      ? 'bg-indigo-600 text-white shadow'
+                      ? 'bg-rose-500 text-white shadow'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -279,7 +266,7 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
               </div>
             </div>
 
-            {/* Tab: Upload Photo */}
+            {/* Tab: Upload File */}
             {imageTab === 'upload' && (
               <div className="space-y-2">
                 <input
@@ -302,13 +289,13 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
                     onClick={() => fileInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2.5 ${
                       isDragging
-                        ? 'border-indigo-400 bg-indigo-500/10'
+                        ? 'border-rose-400 bg-rose-500/10'
                         : 'border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900'
                     }`}
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-inner">
+                    <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shadow-inner">
                       {isCompressing ? (
-                        <RefreshCw className="w-6 h-6 animate-spin text-indigo-400" />
+                        <RefreshCw className="w-6 h-6 animate-spin text-rose-400" />
                       ) : (
                         <Upload className="w-6 h-6" />
                       )}
@@ -317,19 +304,19 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
                       <p className="font-bold text-white text-xs">
                         {isCompressing
                           ? 'Mengompresi & Memproses Foto...'
-                          : 'Klik untuk memilih foto dari Laptop / HP'}
+                          : 'Klik untuk upload poster dari Laptop / HP'}
                       </p>
                       <p className="text-[11px] text-slate-400 mt-0.5">
-                        Atau drag &amp; drop file gambar di sini (Format: PNG, JPG, WEBP)
+                        Atau drag &amp; drop gambar poster ke area ini
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3 space-y-2.5">
-                    <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-800">
+                    <div className="relative h-40 rounded-xl overflow-hidden bg-slate-950 border border-slate-800">
                       <img
                         src={formData.imageUrl}
-                        alt="Preview Banner"
+                        alt="Preview Poster"
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-2 right-2 flex items-center gap-1.5">
@@ -362,7 +349,7 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
               </div>
             )}
 
-            {/* Tab: Input Link URL */}
+            {/* Tab: URL */}
             {imageTab === 'url' && (
               <div className="space-y-2">
                 <input
@@ -372,11 +359,11 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
                     setFormData({ ...formData, imageUrl: e.target.value });
                     setCompressionInfo(null);
                   }}
-                  placeholder="https://... atau /images/games/mlbb-banner.webp"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 text-white font-mono outline-none"
+                  placeholder="https://images.unsplash.com/... atau /images/..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-rose-500 text-white font-mono outline-none"
                 />
                 {formData.imageUrl && (
-                  <div className="rounded-xl overflow-hidden border border-slate-800 aspect-video bg-slate-950 relative">
+                  <div className="rounded-xl overflow-hidden border border-slate-800 h-36 bg-slate-950 relative">
                     <img
                       src={formData.imageUrl}
                       alt="Preview"
@@ -386,7 +373,7 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
                       }}
                     />
                     <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-slate-300">
-                      Pratinjau Banner
+                      Pratinjau Poster
                     </span>
                   </div>
                 )}
@@ -394,17 +381,32 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
             )}
           </div>
 
-          <div>
-            <label className="block font-semibold text-slate-300 mb-1">
-              Target Link Saat Banner Diklik
-            </label>
-            <input
-              type="text"
-              value={formData.targetUrl}
-              onChange={(e) => setFormData({ ...formData, targetUrl: e.target.value })}
-              placeholder="/game/mobile-legends atau /promo"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-indigo-500 text-white font-mono outline-none"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">
+                Teks Tombol Aksi (CTA)
+              </label>
+              <input
+                type="text"
+                value={formData.buttonText}
+                onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                placeholder="e.g. Ambil Promo Sekarang"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-rose-500 text-white font-bold outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">
+                Link Tujuan Tombol
+              </label>
+              <input
+                type="text"
+                value={formData.buttonUrl}
+                onChange={(e) => setFormData({ ...formData, buttonUrl: e.target.value })}
+                placeholder="/promo atau /game/mobile-legends"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus:border-rose-500 text-white font-mono outline-none"
+              />
+            </div>
           </div>
 
           <label className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer">
@@ -412,12 +414,12 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
               type="checkbox"
               checked={formData.isActive}
               onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="w-4 h-4 rounded text-indigo-500 focus:ring-0"
+              className="w-4 h-4 rounded text-rose-500 focus:ring-0"
             />
             <div>
-              <span className="font-semibold text-white block">Banner Aktif</span>
+              <span className="font-semibold text-white block">Aktifkan Popup Ini</span>
               <span className="text-[10px] text-slate-400 block">
-                Tampilkan banner ini di rotasi slide Hero Banner halaman utama
+                Tampilkan popup ini kepada pengunjung ketika membuka website TokoGem
               </span>
             </div>
           </label>
@@ -433,17 +435,17 @@ export default function BannerModal({ isOpen, banner, onClose, onSave }: BannerM
             <button
               type="submit"
               disabled={isSubmitting || isCompressing}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white font-bold shadow-lg shadow-indigo-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-black shadow-lg shadow-rose-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                   Menyimpan...
                 </span>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>{isEdit ? 'Simpan Perubahan' : 'Buat Banner'}</span>
+                  <span>{isEdit ? 'Simpan Perubahan' : 'Buat Popup Baru'}</span>
                 </>
               )}
             </button>

@@ -1,32 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { webPopups } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { seedDatabase } from '@/db/seed';
 
 export async function GET() {
   try {
     await seedDatabase();
 
-    const activePopup = await db
+    const activePopups = await db
       .select()
       .from(webPopups)
       .where(eq(webPopups.isActive, true))
-      .limit(1);
-
-    if (!activePopup.length) {
-      return NextResponse.json({
-        success: true,
-        data: null,
-      });
-    }
+      .orderBy(desc(webPopups.id));
 
     return NextResponse.json({
       success: true,
-      data: activePopup[0],
+      data: activePopups,
     });
   } catch (error: any) {
-    console.error('Error fetching public popup:', error);
+    console.error('Error fetching public popups:', error);
     return NextResponse.json(
       { success: false, message: 'Gagal memuat popup', error: error.message },
       { status: 500 }
