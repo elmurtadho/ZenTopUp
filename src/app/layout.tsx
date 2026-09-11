@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { AuthProvider } from '@/context/AuthContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 export const metadata: Metadata = {
   title: 'TokoGem — Platform Top Up Game Cepat, Termurah & Resmi',
@@ -27,11 +28,13 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark">
       <body className="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
-        <AuthProvider>
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

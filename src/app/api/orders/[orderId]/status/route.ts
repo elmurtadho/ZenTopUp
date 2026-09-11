@@ -109,7 +109,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       await db
         .update(payments)
         .set({
-          status: newStatus === 'berhasil' ? 'berhasil' : 'pending',
+          status: newStatus === 'berhasil' ? 'berhasil' : (newStatus === 'gagal' ? 'gagal' : 'pending'),
           paidAt: newStatus === 'berhasil' ? new Date().toISOString() : null,
         })
         .where(eq(payments.orderId, orderId));
@@ -125,6 +125,38 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
         game?.name,
         item?.name
       );
+    } else {
+      // Fallback: auto-create order record for test orders so notifications & details are persistent
+      const fallbackGames = await db.select().from(games).limit(1);
+      const fallbackItems = fallbackGames.length > 0
+        ? await db.select().from(items).where(eq(items.gameId, fallbackGames[0].id)).limit(1)
+        : [];
+      if (fallbackGames.length > 0 && fallbackItems.length > 0) {
+        const game = fallbackGames[0];
+        const item = fallbackItems[0];
+        await db.insert(orders).values({
+          id: orderId,
+          gameId: game.id,
+          itemId: item.id,
+          gameUserId: '12345678',
+          serverId: '1001',
+          whatsapp: '081234567890',
+          itemPrice: item.price,
+          discountAmount: 0,
+          adminFee: 1000,
+          totalAmount: item.price + 1000,
+          paymentMethod: 'BCA Virtual Account',
+          status: newStatus,
+        });
+        await db.insert(payments).values({
+          orderId,
+          method: 'BCA Virtual Account',
+          status: newStatus === 'berhasil' ? 'berhasil' : (newStatus === 'gagal' ? 'gagal' : 'pending'),
+          amount: item.price + 1000,
+          paidAt: newStatus === 'berhasil' ? new Date().toISOString() : null,
+        });
+        await triggerOrderStatusNotification(orderId, newStatus, game.name, item.name);
+      }
     }
 
     return NextResponse.json({

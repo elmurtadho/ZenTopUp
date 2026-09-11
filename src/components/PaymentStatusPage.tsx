@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -13,10 +13,12 @@ import {
   ShieldCheck,
   CreditCard,
   Zap,
-  AlertCircle
+  AlertCircle,
+  FlaskConical
 } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
 
-type StatusType = 'success' | 'pending' | 'failed';
+export type StatusType = 'success' | 'pending' | 'failed';
 
 interface PaymentStatusPageProps {
   orderId: string;
@@ -45,7 +47,7 @@ const STATUS_CONFIG = {
     badge: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
     badgeText: '⏳ Menunggu Konfirmasi',
     title: 'Pembayaran Sedang Diproses',
-    description: 'Sistem kami sedang memverifikasi pembayaranmu. Biasanya selesai dalam 1-5 menit. Halaman ini akan otomatis diperbarui.',
+    description: 'Sistem kami sedang memverifikasi pembayaranmu. Item akan dikirim segera setelah transfer diverifikasi.',
   },
   failed: {
     icon: <XCircle className="w-10 h-10 text-red-400" />,
@@ -68,17 +70,114 @@ export default function PaymentStatusPage({
   onRetry,
 }: Partial<PaymentStatusPageProps>) {
   const router = useRouter();
+  const { success, error, info } = useToast();
+  const [currentStatus, setCurrentStatus] = useState<StatusType>(status);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const config = STATUS_CONFIG[status];
 
-  const handleRefresh = () => {
+  useEffect(() => {
+    setCurrentStatus(status);
+  }, [status]);
+
+  const config = STATUS_CONFIG[currentStatus];
+
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1500);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`);
+      const json = await res.json();
+      if (json.data?.status === 'berhasil') {
+        setCurrentStatus('success');
+        success('Status Terverifikasi', 'Pembayaran telah sukses diverifikasi.');
+      } else if (json.data?.status === 'gagal') {
+        setCurrentStatus('failed');
+        error('Pembayaran Gagal', 'Pesanan ditolak atau kadaluarsa.');
+      } else {
+        info('Menunggu Pembayaran', 'Pesanan masih dalam status menunggu pembayaran.');
+      }
+    } catch {
+      // Fallback
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 800);
+    }
+  };
+
+  const handleSwitchStatus = async (newStatus: StatusType) => {
+    setCurrentStatus(newStatus);
+    const dbStatus = newStatus === 'success' ? 'berhasil' : (newStatus === 'failed' ? 'gagal' : 'pending');
+
+    try {
+      await fetch(`/api/orders/${orderId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: dbStatus }),
+      });
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('notification-updated', {
+          detail: { orderId, status: dbStatus }
+        }));
+      }
+
+      if (newStatus === 'success') {
+        success('Simulasi Berhasil', `Pesanan ${orderId} (${itemName}) berstatus Berhasil.`);
+      } else if (newStatus === 'failed') {
+        error('Simulasi Gagal', `Pesanan ${orderId} berstatus Gagal / Dibatalkan.`);
+      } else {
+        info('Simulasi Menunggu', `Pesanan ${orderId} berstatus Menunggu Pembayaran.`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
     <div className="py-10 sm:py-16">
-      <div className="max-w-xl mx-auto px-4 sm:px-6">
+      <div className="max-w-xl mx-auto px-4 sm:px-6 space-y-4">
+
+        {/* Sandbox Status Preview Switcher */}
+        <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+          <span className="text-indigo-300 font-bold flex items-center gap-1.5">
+            <FlaskConical className="w-4 h-4 text-indigo-400" />
+            <span>Sandbox Preview Switcher:</span>
+          </span>
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => handleSwitchStatus('success')}
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl font-extrabold text-xs transition text-center cursor-pointer ${
+                currentStatus === 'success'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/25'
+                  : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-700'
+              }`}
+            >
+              🟢 Berhasil
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSwitchStatus('pending')}
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl font-extrabold text-xs transition text-center cursor-pointer ${
+                currentStatus === 'pending'
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25'
+                  : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-700'
+              }`}
+            >
+              ⏳ Menunggu
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSwitchStatus('failed')}
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl font-extrabold text-xs transition text-center cursor-pointer ${
+                currentStatus === 'failed'
+                  ? 'bg-red-500 text-white shadow-md shadow-red-500/25'
+                  : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-700'
+              }`}
+            >
+              🔴 Gagal
+            </button>
+          </div>
+        </div>
+
+        {/* Main Status Card */}
         <div className={`rounded-3xl border p-8 sm:p-10 text-center shadow-2xl space-y-6 ${config.bgColor}`}>
           
           {/* Icon */}
@@ -129,7 +228,7 @@ export default function PaymentStatusPage({
 
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-2 max-w-sm mx-auto w-full">
-            {status === 'pending' && (
+            {currentStatus === 'pending' && (
               <button
                 type="button"
                 onClick={handleRefresh}
@@ -140,10 +239,10 @@ export default function PaymentStatusPage({
               </button>
             )}
 
-            {status === 'failed' && onRetry && (
+            {currentStatus === 'failed' && (
               <button
                 type="button"
-                onClick={onRetry}
+                onClick={onRetry || (() => router.push('/'))}
                 className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -151,7 +250,7 @@ export default function PaymentStatusPage({
               </button>
             )}
 
-            {status === 'success' && (
+            {currentStatus === 'success' && (
               <Link
                 href="/"
                 className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition"

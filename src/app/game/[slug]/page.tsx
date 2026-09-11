@@ -31,6 +31,7 @@ import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 import OrderSummaryModal from '@/components/OrderSummaryModal';
 import PromoForm from '@/components/PromoForm';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -39,6 +40,7 @@ interface PageProps {
 export default function GameDetailPage({ params }: PageProps) {
   const { slug } = use(params);
   const router = useRouter();
+  const { success, error, info } = useToast();
 
   const { user, isGuest, isMember, isReseller, deductBalance } = useAuth();
   const activeRole = user?.role || 'guest';
@@ -189,38 +191,112 @@ export default function GameDetailPage({ params }: PageProps) {
     setShowSummaryModal(true);
   };
 
-  const handleConfirmOrder = async () => {
+  const handleConfirmOrder = async (testMode: 'pending' | 'berhasil' | 'gagal' = 'pending') => {
     setIsProcessing(true);
-    const mockOrderId = 'GEM-' + Math.floor(100000 + Math.random() * 900000);
+    let orderId = 'GEM-' + Math.floor(100000 + Math.random() * 900000);
 
-    // If paid with Saldo TokoGem
-    if (selectedPayment?.id === 'saldo') {
+    const isPaidWithSaldo = selectedPayment?.id === 'saldo';
+    const finalInitialStatus = isPaidWithSaldo ? 'berhasil' : testMode;
+
+    try {
+      // 1. Create order in database
+      const orderPayload = {
+        customOrderId: orderId,
+        gameId: game.id,
+        gameSlug: game.slug,
+        itemId: selectedItem?.id,
+        gameUserId: userId,
+        serverId: serverId || null,
+        whatsapp: whatsapp,
+        paymentMethod: selectedPayment?.id || 'bca-va',
+        promoCode: appliedPromo?.code || null,
+        userId: user?.id || null,
+        userRole: activeRole,
+        status: finalInitialStatus,
+      };
+
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+      const resJson = await res.json();
+      if (resJson.success && resJson.data?.orderId) {
+        orderId = resJson.data.orderId;
+      }
+    } catch (err) {
+      console.warn('Network issue creating order, continuing with fallback:', err);
+    }
+
+    // Trigger custom event so NotificationBell updates immediately
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('notification-updated', {
+        detail: { orderId, status: finalInitialStatus }
+      }));
+    }
+
+    // 2. Case A: Paid with Saldo TokoGem
+    if (isPaidWithSaldo) {
       if (user && user.balance >= totalPrice) {
         const res = await deductBalance(
           totalPrice,
-          mockOrderId,
+          orderId,
           `Top up ${game.name} - ${selectedItem?.name} (${userId})`
         );
         if (res.success) {
           setIsProcessing(false);
           setShowSummaryModal(false);
-          // Directly to success confirmation
-          router.push(`/konfirmasi/${mockOrderId}?method=saldo&status=berhasil`);
+          success(
+            'Pembayaran Saldo TokoGem Berhasil!',
+            `Top up ${selectedItem?.name} untuk akun ${userId} sukses 1-detik dengan Rp 0 Biaya Admin.`,
+            { label: 'Buka Invoice', href: `/konfirmasi/${orderId}?status=success` }
+          );
+          router.push(`/konfirmasi/${orderId}?method=saldo&status=berhasil`);
           return;
         } else {
           setIsProcessing(false);
           setSaldoError(res.message || 'Gagal memotong saldo akun');
+          error('Pembayaran Saldo Gagal', res.message || 'Saldo tidak mencukupi.');
           return;
         }
       }
     }
 
-    // Regular payment (QRIS, VA, E-Wallet)
-    setTimeout(() => {
+    // 3. Case B: Sandbox Auto-Success
+    if (testMode === 'berhasil') {
       setIsProcessing(false);
       setShowSummaryModal(false);
-      router.push(`/pembayaran/${mockOrderId}`);
-    }, 1000);
+      success(
+        'Simulasi Pembayaran Berhasil! (Sandbox)',
+        `Pesanan ${orderId} (${selectedItem?.name}) terverifikasi sukses. Item game telah terkirim.`,
+        { label: 'Buka Invoice', href: `/konfirmasi/${orderId}?status=success` }
+      );
+      router.push(`/konfirmasi/${orderId}?status=success`);
+      return;
+    }
+
+    // 4. Case C: Sandbox Failed Simulation
+    if (testMode === 'gagal') {
+      setIsProcessing(false);
+      setShowSummaryModal(false);
+      error(
+        'Simulasi Pembayaran Gagal / Ditolak (Sandbox)',
+        `Transaksi ${orderId} dibatalkan atau ditolak oleh payment provider. Silakan coba kembali.`,
+        { label: 'Cek Status', href: `/konfirmasi/${orderId}?status=failed` }
+      );
+      router.push(`/konfirmasi/${orderId}?status=failed`);
+      return;
+    }
+
+    // 5. Case D: Regular Payment (Menunggu Pembayaran)
+    setIsProcessing(false);
+    setShowSummaryModal(false);
+    info(
+      'Pesanan Dibuat — Menunggu Pembayaran',
+      `Pesanan ${orderId} sebesar Rp ${totalPrice.toLocaleString('id-ID')} siap dibayar. Selesaikan sebelum batas waktu berakhir.`,
+      { label: 'Bayar Sekarang', href: `/pembayaran/${orderId}` }
+    );
+    router.push(`/pembayaran/${orderId}`);
   };
 
   return (

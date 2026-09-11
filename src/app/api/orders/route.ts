@@ -17,6 +17,10 @@ export async function POST(request: NextRequest) {
       email,
       paymentMethod: paymentMethodId,
       promoCode,
+      userId,
+      userRole,
+      status: requestedStatus,
+      customOrderId,
     } = body;
 
     // Ensure database is seeded
@@ -64,16 +68,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Find payment method
+    // 3. Find payment method & determine item price according to role
+    let isSaldo = paymentMethodId.toLowerCase() === 'saldo';
     const methodResults = await db
       .select()
       .from(paymentMethods)
       .where(eq(paymentMethods.id, paymentMethodId.toLowerCase()));
 
     const resolvedMethod = methodResults[0];
+    const paymentMethodName = isSaldo 
+      ? 'Saldo Dompet TokoGem' 
+      : (resolvedMethod ? resolvedMethod.name : paymentMethodId);
 
-    const adminFee = resolvedMethod ? resolvedMethod.adminFee : 0;
-    const itemPrice = resolvedItem.price;
+    const adminFee = isSaldo ? 0 : (resolvedMethod ? resolvedMethod.adminFee : 0);
+
+    let itemPrice = resolvedItem.price;
+    if (userRole === 'reseller' && resolvedItem.resellerPrice) {
+      itemPrice = resolvedItem.resellerPrice;
+    } else if (userRole === 'member' && resolvedItem.memberPrice) {
+      itemPrice = resolvedItem.memberPrice;
+    }
 
     // 4. Calculate promo discount if applied
     let discountAmount = 0;
@@ -106,13 +120,19 @@ export async function POST(request: NextRequest) {
     // 5. Total amount
     const totalAmount = Math.max(0, itemPrice - discountAmount) + adminFee;
 
-    // 6. Generate Unique Order ID
+    // 6. Generate Unique Order ID or use provided one
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const orderId = `GEM-${Date.now().toString().slice(-4)}${randomSuffix}`;
+    const orderId = customOrderId || `GEM-${Date.now().toString().slice(-4)}${randomSuffix}`;
+
+    const finalStatus = (['berhasil', 'gagal', 'diproses', 'pending'].includes(requestedStatus))
+      ? requestedStatus
+      : (isSaldo ? 'berhasil' : 'pending');
 
     // 7. Insert into orders table
     await db.insert(orders).values({
       id: orderId,
+      userId: userId ? Number(userId) : null,
+      userRole: userRole || 'guest',
       gameId: resolvedGame.id,
       itemId: resolvedItem.id,
       gameUserId: String(gameUserId),
@@ -124,8 +144,8 @@ export async function POST(request: NextRequest) {
       adminFee,
       totalAmount,
       promoCode: validPromoCode,
-      paymentMethod: resolvedMethod ? resolvedMethod.name : paymentMethodId,
-      status: 'pending',
+      paymentMethod: paymentMethodName,
+      status: finalStatus,
     });
 
     // 8. Generate payment reference & details
@@ -134,19 +154,16 @@ export async function POST(request: NextRequest) {
 
     await db.insert(payments).values({
       orderId,
-      method: resolvedMethod ? resolvedMethod.name : paymentMethodId,
-      status: 'pending',
+      method: paymentMethodName,
+      status: finalStatus === 'berhasil' ? 'berhasil' : (finalStatus === 'gagal' ? 'gagal' : 'pending'),
       amount: totalAmount,
       externalRef: vaNumber,
+      paidAt: finalStatus === 'berhasil' ? new Date().toISOString() : null,
     });
 
-    // 9. Insert Notification
-    await db.insert(notifications).values({
-      orderId,
-      type: 'order_created',
-      title: `Pesanan ${orderId} Dibuat`,
-      message: `Menunggu pembayaran sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${resolvedItem.name} (${resolvedGame.name})`,
-    });
+    // 9. Insert Notification using notificationService
+    const { triggerOrderStatusNotification } = await import('@/services/notificationService');
+    await triggerOrderStatusNotification(orderId, finalStatus, resolvedGame.name, resolvedItem.name);
 
     return NextResponse.json({
       success: true,

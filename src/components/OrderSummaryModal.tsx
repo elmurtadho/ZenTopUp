@@ -19,7 +19,7 @@ import {
 interface OrderSummaryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (testMode?: 'pending' | 'berhasil' | 'gagal') => void;
   isProcessing: boolean;
   game: Game;
   item: GameItem | null;
@@ -51,6 +51,8 @@ export default function OrderSummaryModal({
   adminFee,
   totalPrice,
 }: OrderSummaryModalProps) {
+  const [testMode, setTestMode] = React.useState<'pending' | 'berhasil' | 'gagal'>('pending');
+
   if (!isOpen || !item || !payment) return null;
 
   return (
@@ -154,6 +156,52 @@ export default function OrderSummaryModal({
           </div>
         </div>
 
+        {/* Sandbox Test Mode Selector */}
+        <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-indigo-300 flex items-center gap-1.5">
+              <span>🧪</span>
+              <span>Mode Pengujian (Sandbox Mode):</span>
+            </span>
+            <span className="text-[10px] text-indigo-400 font-mono font-bold">DEV TESTING</span>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              type="button"
+              onClick={() => setTestMode('pending')}
+              className={`py-2 px-1.5 rounded-xl text-[10px] font-bold border transition text-center cursor-pointer ${
+                testMode === 'pending'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/70 shadow-sm'
+                  : 'bg-slate-900/70 text-slate-400 border-slate-800 hover:text-white'
+              }`}
+            >
+              ⏳ Menunggu Bayar
+            </button>
+            <button
+              type="button"
+              onClick={() => setTestMode('berhasil')}
+              className={`py-2 px-1.5 rounded-xl text-[10px] font-bold border transition text-center cursor-pointer ${
+                testMode === 'berhasil'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/70 shadow-sm'
+                  : 'bg-slate-900/70 text-slate-400 border-slate-800 hover:text-white'
+              }`}
+            >
+              🟢 Auto-Berhasil
+            </button>
+            <button
+              type="button"
+              onClick={() => setTestMode('gagal')}
+              className={`py-2 px-1.5 rounded-xl text-[10px] font-bold border transition text-center cursor-pointer ${
+                testMode === 'gagal'
+                  ? 'bg-red-500/20 text-red-300 border-red-500/70 shadow-sm'
+                  : 'bg-slate-900/70 text-slate-400 border-slate-800 hover:text-white'
+              }`}
+            >
+              🔴 Simulasi Gagal
+            </button>
+          </div>
+        </div>
+
         {/* Security badge */}
         <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -173,7 +221,7 @@ export default function OrderSummaryModal({
           <button
             type="button"
             disabled={isProcessing}
-            onClick={onConfirm}
+            onClick={() => onConfirm(testMode)}
             className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
           >
             {isProcessing ? (

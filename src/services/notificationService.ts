@@ -58,8 +58,14 @@ export async function triggerOrderStatusNotification(
     type = 'order_success';
     title = `Top Up Sukses — ${itemName || 'Item Game'} (${gameName || 'Game'})`;
     message = `Pembayaran pesanan ${orderId} telah diverifikasi. Item top up telah berhasil dikirimkan ke akun game kamu!`;
-    linkHref = `/riwayat/${orderId}`;
+    linkHref = `/konfirmasi/${orderId}?status=success`;
     linkText = 'Buka Invoice';
+  } else if (newStatus === 'diproses') {
+    type = 'order_created';
+    title = `Pesanan Diproses — ${orderId}`;
+    message = `Pembayaran pesanan ${orderId} terverifikasi. Item ${itemName || 'Item Game'} (${gameName || 'Game'}) sedang diproses kirim ke akun game kamu!`;
+    linkHref = `/konfirmasi/${orderId}?status=pending`;
+    linkText = 'Pantau Pesanan';
   } else if (newStatus === 'pending') {
     type = 'order_created';
     title = `Menunggu Pembayaran — ${orderId}`;
@@ -69,8 +75,8 @@ export async function triggerOrderStatusNotification(
   } else if (newStatus === 'gagal') {
     type = 'order_failed';
     title = `Transaksi Dibatalkan / Gagal — ${orderId}`;
-    message = `Pesanan ${orderId} telah dibatalkan atau batas waktu pembayaran telah kadaluarsa.`;
-    linkHref = `/riwayat/${orderId}`;
+    message = `Pesanan ${orderId} telah dibatalkan, kadaluarsa, atau pembayaran ditolak oleh sistem.`;
+    linkHref = `/konfirmasi/${orderId}?status=failed`;
     linkText = 'Cek Status';
   }
 

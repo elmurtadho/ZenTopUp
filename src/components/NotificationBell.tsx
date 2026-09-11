@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -27,22 +27,33 @@ export default function NotificationBell() {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   // Fetch live notifications on mount if available
-  useEffect(() => {
-    async function loadNotifications() {
-      try {
-        const res = await fetch('/api/notifications');
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-            setNotifications(json.data);
-          }
+  const loadNotifications = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setNotifications(json.data);
         }
-      } catch {
-        // Fallback to initial mock notifications
       }
+    } catch {
+      // Fallback to initial mock notifications
     }
-    loadNotifications();
   }, []);
+
+  // Fetch live notifications on mount and when updated
+  useEffect(() => {
+    loadNotifications();
+
+    const handleUpdate = () => {
+      loadNotifications();
+    };
+
+    window.addEventListener('notification-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('notification-updated', handleUpdate);
+    };
+  }, [loadNotifications]);
 
   // Handle clicking outside
   useEffect(() => {
